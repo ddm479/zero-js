@@ -1,0 +1,25 @@
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>끝말잇기</title>
+  <style></style>
+</head>
+
+<body>
+  <!-- shift + alt + 아래키 : 현재 커서위치 1줄을 아래로 복사 -->
+  <div><span id="order">1</span>번째 참가자</div>
+  <div>제시어: <span id="word"></span></div>
+  <input type="text">
+  <button>입력</button>
+  <script>
+    // 3가지 대화상자
+    const number = parseInt(prompt('몇 명이 참가하나요?'), 10); // 문자열 값을 입력받고 정수화
+    alert(number);
+    const yesOrNO = confirm('맞나요?'); // 예, 아니오를 받는다
+  </script>
+  <div></div>
+</body>
+
+</html>
