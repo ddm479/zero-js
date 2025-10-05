@@ -15,9 +15,62 @@
   <button>입력</button>
   <script>
     // 3가지 대화상자
+    // alert(number);
+    // const yesOrNO = confirm('맞나요?'); // 예, 아니오를 받는다
     const number = parseInt(prompt('몇 명이 참가하나요?'), 10); // 문자열 값을 입력받고 정수화
-    alert(number);
-    const yesOrNO = confirm('맞나요?'); // 예, 아니오를 받는다
+    const $input = document.querySelector('input');
+    const $button = document.querySelector('button');
+    const $word = document.querySelector('#word');
+    const $order = document.querySelector('#order');
+    let word; // 제시어
+    let newWord; // 새로 입력한 단어
+
+    // 리스너 함수
+    const onClickButton = () => {
+      if (!word) { // 제시어가 비어 있는가?
+        // 비어 있다.
+        word = newWord; // 입력한 단어가 제시어가 된다
+        $word.textContent = word;  // 제시어 화면에 나타내기
+        // 값에 접근할 때 (input, select, textarea 등) 무언가를 입력하는 대부분은 value 사용, 나머지는 textContent 사용
+
+        const order = Number($order.textContent); // 현재 순서
+        if (order + 1 > number) {
+          $order.textContent = 1 // 다음 순서를 1로
+        } else {
+          $order.textContent = order + 1;
+        }
+        $input.value = '';  // 입력창 비우기
+        $input.focus(); // 입력창에 커서 두기
+      } else {
+        // 비어 있지 않다.
+        if (word[word.length - 1] === newWord[0]) { // 입력한 단어가 끝말잇기 규칙을 따르는가
+          word = newWord; // 입력한 단어가 제시어가 된다
+          $word.textContent = word;
+
+          const order = Number($order.textContent); // 현재 순서
+          if (order + 1 > number) {
+            $order.textContent = 1 // 다음 순서를 1로
+          } else {
+            $order.textContent = order + 1;
+          }
+          $input.value = '';  // 입력창 비우기
+          $input.focus(); // 입력창에 커서 두기
+        } else { // 따르지 않는다면
+          alert('올바르지 않는 단어입니다.');
+          $input.value = '';  // 입력창 비우기
+          $input.focus();
+        }
+      }
+    }
+    const onInput = (event) => {
+      newWord = event.target.value;
+    }
+
+    $button.addEventListener('click', onClickButton);
+    // 어떤 동작을 실행하고 난 뒤에 연이어 실행되는 함수를 콜백함수라고 말한다.
+
+    // 입력 이벤트 리스너 등록
+    $input.addEventListener('input', onInput);
   </script>
   <div></div>
 </body>
