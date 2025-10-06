@@ -27,7 +27,7 @@
 
     // 리스너 함수
     const onClickButton = () => {
-      if (!word) { // 제시어가 비어 있는가?
+      if (!word || word[word.length - 1] === newWord[0]) { // 제시어가 비어 있는가? 또는 입력한 단어가 끝말잇기 규칙을 따르는가
         // 비어 있다.
         word = newWord; // 입력한 단어가 제시어가 된다
         $word.textContent = word;  // 제시어 화면에 나타내기
@@ -39,28 +39,12 @@
         } else {
           $order.textContent = order + 1;
         }
-        $input.value = '';  // 입력창 비우기
-        $input.focus(); // 입력창에 커서 두기
-      } else {
-        // 비어 있지 않다.
-        if (word[word.length - 1] === newWord[0]) { // 입력한 단어가 끝말잇기 규칙을 따르는가
-          word = newWord; // 입력한 단어가 제시어가 된다
-          $word.textContent = word;
-
-          const order = Number($order.textContent); // 현재 순서
-          if (order + 1 > number) {
-            $order.textContent = 1 // 다음 순서를 1로
-          } else {
-            $order.textContent = order + 1;
-          }
-          $input.value = '';  // 입력창 비우기
-          $input.focus(); // 입력창에 커서 두기
-        } else { // 따르지 않는다면
-          alert('올바르지 않는 단어입니다.');
-          $input.value = '';  // 입력창 비우기
-          $input.focus();
-        }
       }
+      else { // 따르지 않는다면
+        alert('올바르지 않는 단어입니다.');
+      }
+      $input.value = '';  // 입력창 비우기
+      $input.focus(); // 입력창에 커서 두기
     }
     const onInput = (event) => {
       newWord = event.target.value;
