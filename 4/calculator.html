@@ -45,8 +45,10 @@
   let numTwo = '';
   const $operator = document.querySelector('#operator');
   const $result = document.querySelector('#result');
+
+  // 좀 더 간결한 방식
   const onClickNumber = (event) => {
-    if (!operator) { // 비어있다
+    if (!operator) { // 연산자가 비어있다
       numOne += event.target.textContent;
       $result.value += event.target.textContent;
       return;
@@ -69,7 +71,9 @@
   document.querySelector('#num-8').addEventListener('click', onClickNumber);
   document.querySelector('#num-9').addEventListener('click', onClickNumber);
 
+  // 고차함수 방식, 고차함수는 함수를 return하는 함수를 말한다.
   const onClickOperator = (op) => () => {
+    // 화살표 함수의 규칙에 따라 return과 {} 생략된 형태
     if (numOne) {
       operator = op;
       $operator.value = op;

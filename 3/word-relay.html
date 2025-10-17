@@ -47,11 +47,13 @@
       $input.focus(); // 입력창에 커서 두기
     }
     const onInput = (event) => {
+      // event는 브라우저가 자동으로 넣어준다.
       newWord = event.target.value;
     }
 
     $button.addEventListener('click', onClickButton);
     // 어떤 동작을 실행하고 난 뒤에 연이어 실행되는 함수를 콜백함수라고 말한다.
+    // 클릭을 하면 브라우저가 onClickButton함수를 실행하면서 인수로 event를 넣어준다.
 
     // 입력 이벤트 리스너 등록
     $input.addEventListener('input', onInput);
