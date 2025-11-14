@@ -47,6 +47,26 @@
       $logs.appendChild(message);
     }
 
+    function addLogLine(value, ...nodes) {
+      const logLine = document.createElement("div"); // 한 줄 단위
+
+      // value 텍스트 붙이기
+      const valueNode = document.createTextNode(`${value}:`);
+      const br = document.createElement("br");
+      logLine.append(valueNode, ...nodes, br);
+
+      // 최종으로 로그 영역에 추가
+      $logs.appendChild(logLine);
+    }
+
+    // 색칠된 span 생성함수
+    function createColoredSpan(text, color) {
+      const span = document.createElement("span");
+      span.textContent = text;
+      span.style.color = color;
+      return span;
+    }
+
     let out = 0;
     $form.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -79,15 +99,23 @@
       }
       if (strike === 0 && ball === 0) {
         out++;
-        $logs.append(`${value}:${out}아웃`, document.createElement('br'));
+        const outSpan = createColoredSpan(`${out} 아웃`, "red");
+        addLogLine(value, outSpan);
+        // $logs.append(`${value}:${out}아웃`, document.createElement('br'));
       } else {
-        $logs.append(`${value}:${strike} 스트라이크 ${ball} 볼`, document.createElement('br'));
+        const strikeSpan = createColoredSpan(`${strike} 스트라이크 `, "blue");
+        const ballSpan = createColoredSpan(`${ball} 볼`, "green");
+        addLogLine(value, strikeSpan, ballSpan);
+        // $logs.append(`${value}:${strike} 스트라이크 ${ball} 볼`, document.createElement('br'));
       }
+
+      // 아래는 함수화 하기 전
       // if (strike === 0 && ball === 0) {
       //   out++;
 
       //   const logLine = document.createElement("div"); // 한 줄 단위
       //   const valueNode = document.createTextNode(`${value}:`);
+
       //   const outNode = document.createElement("span");
       //   outNode.textContent = `${out} 아웃`;
       //   outNode.style.color = "red"; // 아웃 빨간색
