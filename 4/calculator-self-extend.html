@@ -110,7 +110,9 @@
       //   }
       // }
       // 아래는 if문 중첩 제거버젼
-      ///////////////////////////////////////////////////////////////
+      ////////////////////////// 추가 ////////////////////////////////////
+      // 1. 처음에 '-' 허용하고 음수로 받기 추가
+      // 2. 3+4 하고 '+' 눌렀을 때 계산해서 결과 7로 바꾸고 나타내기 추가
       if (!numOne) {
         if (op === '-') {
           numOne += op;
@@ -150,6 +152,7 @@
           break;
       }
     }
+    //////////////////////////////////////////////////////////////////////////////////////////////
     document.querySelector('#plus').addEventListener('click', onClickOperator('+'));
     document.querySelector('#minus').addEventListener('click', onClickOperator('-'));
     document.querySelector('#divide').addEventListener('click', onClickOperator('/'));
