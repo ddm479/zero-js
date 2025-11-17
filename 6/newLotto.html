@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <title>로또추첨기</title>
+    <style>
+        .ball {
+            display: inline-block;
+            border: 1px solid black;
+            border-radius: 20px;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 20px;
+            text-align: center;
+            margin-right: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="form">
+        <input name="input" placeholder="숫자 6개를 쉼표로 구분해 입력하세요." />
+        <button>추첨</button>
+    </form>
+    <div id="result">추첨 결과는? </div>
+    <div id="bonus">보너스: </div>
+    <script>
+        //////////////////// 6-1퀴즈. 중복체크 ///////////////// 
+        // const isDuplicate = (arr) => {
+        //     for (let i = 0; i < arr.length; i++) {
+        //         const currElem = arr[i];
+
+        //         for (let j = i + 1; j < arr.length; j++) {
+        //             if (currElem === arr[j]) {
+        //                 return true
+        //             }
+        //         }
+        //     }
+        //     return false; // 중복없음
+        // }
+        //////////////////////////////////////////////////////
+        const $form = document.querySelector('#form');
+        $form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            // 검사
+            // event.target은 $form, name 속성이 'input'인 요소의 value
+            const string = event.target.input.value; // '1,2,3,4,5,6'
+            if (!string.trim()) {
+                // trim() -> 문자열 양 끝의 공백을 제거한 새로운 문자열 반환
+                return alert('숫자를 입력하세요.');
+            }
+
+            const myNumbers = string.split(',').map((v) => parseInt(v.trim())); // [1, 2, 3, 4, 5, 6]
+            if (myNumbers.length !== 6) {
+                return alert('숫자를 6개 입력하세요.')
+            }
+            if (new Set(myNumbers).size !== 6) {
+                return alert('중복된 숫자를 입력했습니다.');
+            }
+            if (myNumbers.find((v) => v > 45 || v < 1)) {
+                return alert('1부터 45까지만 입력할 수 있습니다.');
+            }
+        })
+
+        const candidate = Array(45).fill().map((v, i) => i + 1);
+        const shuffle = [];
+        while (candidate.length > 0) {
+            const random = Math.floor(Math.random() * candidate.length); // 무작위 인덱스 뽑기
+            const spliceArray = candidate.splice(random, 1); // 뽑은 값은 배열에 들어 있음
+            const value = spliceArray[0]; // 배열에 들어 있는 값을 꺼내어
+            shuffle.push(value); // shuffle 배열에 넣기
+        }
+        console.log(shuffle);
+        const winBalls = shuffle.slice(0, 6).sort((a, b) => a - b);
+        const bonus = shuffle[6];
+        console.log(winBalls, bonus);
+
+        const $result = document.querySelector('#result');
+        const drawBall = (number, $parent) => {
+            const $ball = document.createElement('div');
+            $ball.className = 'ball';
+            $ball.textContent = number;
+            $parent.appendChild($ball);
+        };
+
+        for (let i = 0; i < winBalls.length; i++) {
+            setTimeout(() => {
+                drawBall(winBalls[i], $result);
+            }, (i + 1) * 1000);
+        }
+
+        const $bonus = document.querySelector('#bonus');
+        setTimeout(() => {
+            drawBall(bonus, $bonus);
+        }, 7000);
+    </script>
+</body>
