@@ -21,7 +21,7 @@
 <body>
     <form id="form">
         <input name="input" placeholder="숫자 6개를 쉼표로 구분해 입력하세요." />
-        <button>추첨</button>
+        <button id="btn">추첨</button>
     </form>
     <div id="result">추첨 결과는? </div>
     <div id="bonus">보너스: </div>
@@ -41,30 +41,32 @@
         // }
         //////////////////////////////////////////////////////
         const $form = document.querySelector('#form');
+        const $btn = document.querySelector('#btn');
         // 공 추가하기
         const drawBall = (number, $parent) => {
-            let $ball;
-            if (number < 10) {
-                $ball = createColoredBall("red", "white");
-            } else if (number >= 10 && number < 20) {
-                $ball = createColoredBall("orange");
-            } else if (number >= 20 && number < 30) {
-                $ball = createColoredBall("yellow");
-            } else if (number >= 30 && number < 40) {
-                $ball = createColoredBall("blue", "white");
-            } else {
-                $ball = createColoredBall("green", "white");
-            }
+            const $ball = document.createElement('div');
+            $ball.className = 'ball';
+            colorize(number, $ball);
             $ball.textContent = number;
             $parent.appendChild($ball);
         };
 
-        const createColoredBall = (bgColor, color) => {
-            const $ball = document.createElement('div');
-            $ball.className = 'ball';
-            $ball.style.backgroundColor = bgColor;
-            $ball.style.color = color;
-            return $ball;
+        // 숫자 구간별로 공색 설정하기
+        const colorize = (number, $tag) => {
+            if (number < 10) {
+                $tag.style.backgroundColor = 'red';
+                $tag.style.color = 'white';
+            } else if (number < 20) {
+                $tag.style.backgroundColor = 'orange';
+            } else if (number < 30) {
+                $tag.style.backgroundColor = 'yellow';
+            } else if (number < 40) {
+                $tag.style.backgroundColor = 'blue';
+                $tag.style.color = 'white';
+            } else {
+                $tag.style.backgroundColor = 'green';
+                $tag.style.color = 'white';
+            }
         }
 
         // 코드를 더 깔끔하게 만들기 위해 프로미스와 async/await 사용
@@ -72,6 +74,9 @@
         const setTimeoutPromise = (ms) => new Promise((resolve, reject) => { setTimeout(resolve, ms) }) // ms후에 resolve() 실행
         $form.addEventListener('submit', async (event) => {
             event.preventDefault();
+            // 추첨 중에는 버튼 비활성화
+            $btn.disabled = true;
+
             // 입력값 검사
             // event.target은 $form, name 속성이 'input'인 요소의 value
             const string = event.target.input.value; // '1,2,3,4,5,6'
@@ -113,16 +118,17 @@
             }
             const $bonus = document.querySelector('#bonus');
             await setTimeoutPromise(1000);
+            // await setTimeoutPromise(1000), 1초 기다리고 1번공, 1초 기다리고 2번공... 1초 기다리고 보너스 공
             drawBall(bonus, $bonus);
+
             // setTimeout(() => {
             //     drawBall(bonus, $bonus);
             // }, 7000);
-
             // setTimeout(), 0초일 때 모든 타이머를 등록함, 1초 뒤에 1번공, 2초뒤에 2번공, 3초뒤에 3번공... 7초뒤에 보너스 공
 
-            // await setTimeoutPromise(1000), 1초 기다리고 1번공, 1초 기다리고 2번공... 1초 기다리고 보너스 공
 
-            await setTimeoutPromise(0); // 화면수정과 alert()가 연달아 나오면 alert()가 먼저 실행되기 때문에 여기서 delay를 줌, setTimeout(0)은 약 4밀리초
+
+            await setTimeoutPromise(50); // 화면수정과 alert()가 연달아 나오면 alert()가 먼저 실행되기 때문에 여기서 delay를 줌, setTimeout(0)은 약 4밀리초
             let count = 0; // 맞은 횟수
             myNumbers.forEach((my) => {
                 if (winBalls.includes(my)) count++;
@@ -135,6 +141,13 @@
             } else if (count === 4) alert("4등 당첨")
             else if (count === 3) alert("5등 당첨")
             else alert("꽝")
+
+            // 추첨 초기화
+            $result.innerHTML = "추첨 결과는? ";
+            $bonus.innerHTML = "보너스: ";
+
+            // 추첨 끝나면 버튼 활성화
+            $btn.disabled = false;
         })
 
 
