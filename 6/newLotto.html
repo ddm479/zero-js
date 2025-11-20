@@ -41,17 +41,44 @@
         // }
         //////////////////////////////////////////////////////
         const $form = document.querySelector('#form');
-        $form.addEventListener('submit', (event) => {
-            event.preventDefault();
+        // 공 추가하기
+        const drawBall = (number, $parent) => {
+            let $ball;
+            if (number < 10) {
+                $ball = createColoredBall("red", "white");
+            } else if (number >= 10 && number < 20) {
+                $ball = createColoredBall("orange");
+            } else if (number >= 20 && number < 30) {
+                $ball = createColoredBall("yellow");
+            } else if (number >= 30 && number < 40) {
+                $ball = createColoredBall("blue", "white");
+            } else {
+                $ball = createColoredBall("green", "white");
+            }
+            $ball.textContent = number;
+            $parent.appendChild($ball);
+        };
 
-            // 검사
+        const createColoredBall = (bgColor, color) => {
+            const $ball = document.createElement('div');
+            $ball.className = 'ball';
+            $ball.style.backgroundColor = bgColor;
+            $ball.style.color = color;
+            return $ball;
+        }
+
+        // 코드를 더 깔끔하게 만들기 위해 프로미스와 async/await 사용
+        // async/await 문법은 프로미스에만 적용 가능하므로 setTimeout()을 setTimeoutPromise 고차함수로 변경함
+        const setTimeoutPromise = (ms) => new Promise((resolve, reject) => { setTimeout(resolve, ms) }) // ms후에 resolve() 실행
+        $form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            // 입력값 검사
             // event.target은 $form, name 속성이 'input'인 요소의 value
             const string = event.target.input.value; // '1,2,3,4,5,6'
             if (!string.trim()) {
                 // trim() -> 문자열 양 끝의 공백을 제거한 새로운 문자열 반환
                 return alert('숫자를 입력하세요.');
             }
-
             const myNumbers = string.split(',').map((v) => parseInt(v.trim())); // [1, 2, 3, 4, 5, 6]
             if (myNumbers.length !== 6) {
                 return alert('숫자를 6개 입력하세요.')
@@ -62,38 +89,54 @@
             if (myNumbers.find((v) => v > 45 || v < 1)) {
                 return alert('1부터 45까지만 입력할 수 있습니다.');
             }
+
+            const candidate = Array(45).fill().map((v, i) => i + 1);
+            const shuffle = [];
+            while (candidate.length > 0) {
+                const random = Math.floor(Math.random() * candidate.length); // 무작위 인덱스 뽑기
+                const spliceArray = candidate.splice(random, 1); // 뽑은 값은 배열에 들어 있음
+                const value = spliceArray[0]; // 배열에 들어 있는 값을 꺼내어
+                shuffle.push(value); // shuffle 배열에 넣기
+            }
+            console.log(shuffle);
+            const winBalls = shuffle.slice(0, 6).sort((a, b) => a - b);
+            const bonus = shuffle[6];
+            console.log(winBalls, bonus);
+
+            const $result = document.querySelector('#result');
+            for (let i = 0; i < winBalls.length; i++) {
+                await setTimeoutPromise(1000);
+                drawBall(winBalls[i], $result);
+                // setTimeout(() => {
+                //     drawBall(winBalls[i], $result);
+                // }, (i + 1) * 1000);
+            }
+            const $bonus = document.querySelector('#bonus');
+            await setTimeoutPromise(1000);
+            drawBall(bonus, $bonus);
+            // setTimeout(() => {
+            //     drawBall(bonus, $bonus);
+            // }, 7000);
+
+            // setTimeout(), 0초일 때 모든 타이머를 등록함, 1초 뒤에 1번공, 2초뒤에 2번공, 3초뒤에 3번공... 7초뒤에 보너스 공
+
+            // await setTimeoutPromise(1000), 1초 기다리고 1번공, 1초 기다리고 2번공... 1초 기다리고 보너스 공
+
+            await setTimeoutPromise(0); // 화면수정과 alert()가 연달아 나오면 alert()가 먼저 실행되기 때문에 여기서 delay를 줌, setTimeout(0)은 약 4밀리초
+            let count = 0; // 맞은 횟수
+            myNumbers.forEach((my) => {
+                if (winBalls.includes(my)) count++;
+            })
+            if (count === 6) {
+                alert("1등 당첨");
+            } else if (count === 5) {
+                if (myNumbers.includes(bonus)) alert("2등 당첨")
+                else alert("3등 당첨")
+            } else if (count === 4) alert("4등 당첨")
+            else if (count === 3) alert("5등 당첨")
+            else alert("꽝")
         })
 
-        const candidate = Array(45).fill().map((v, i) => i + 1);
-        const shuffle = [];
-        while (candidate.length > 0) {
-            const random = Math.floor(Math.random() * candidate.length); // 무작위 인덱스 뽑기
-            const spliceArray = candidate.splice(random, 1); // 뽑은 값은 배열에 들어 있음
-            const value = spliceArray[0]; // 배열에 들어 있는 값을 꺼내어
-            shuffle.push(value); // shuffle 배열에 넣기
-        }
-        console.log(shuffle);
-        const winBalls = shuffle.slice(0, 6).sort((a, b) => a - b);
-        const bonus = shuffle[6];
-        console.log(winBalls, bonus);
 
-        const $result = document.querySelector('#result');
-        const drawBall = (number, $parent) => {
-            const $ball = document.createElement('div');
-            $ball.className = 'ball';
-            $ball.textContent = number;
-            $parent.appendChild($ball);
-        };
-
-        for (let i = 0; i < winBalls.length; i++) {
-            setTimeout(() => {
-                drawBall(winBalls[i], $result);
-            }, (i + 1) * 1000);
-        }
-
-        const $bonus = document.querySelector('#bonus');
-        setTimeout(() => {
-            drawBall(bonus, $bonus);
-        }, 7000);
     </script>
 </body>
