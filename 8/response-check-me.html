@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>반응속도</title>
+  <style>
+    #screen {
+      width: 300px;
+      height: 200px;
+      text-align: center;
+      user-select: none;
+    }
+
+    /* 초기화면 */
+    #screen.waiting {
+      background-color: aqua;
+    }
+
+    /* 준비 화면 */
+    #screen.ready {
+      background-color: red;
+      color: white;
+    }
+
+    /* 클릭할 화면 */
+    #screen.now {
+      background-color: greenyellow;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="screen" class="waiting">클릭해서 시작하세요</div>
+  <div id="result"></div>
+  <script>
+    const $screen = document.querySelector('#screen');
+    const $result = document.querySelector('#result');
+
+    let startTime;
+    let endTime;
+    let elapsedTime;
+    let sum = 0;
+    let i = 0;
+    $screen.addEventListener('click', (event) => {
+      if (event.target.classList.contains('waiting')) { // 초기(파랑)화면
+        $screen.classList.remove('waiting');
+        $screen.classList.add('ready'); // 빨강화면으로 전환
+        $screen.textContent = '초록색이 되면 클릭하세요';
+        setTimeout(() => {
+          $screen.classList.remove('ready');
+          $screen.classList.add('now'); // 초록화면으로 전환
+          $screen.textContent = '클릭하세요';
+          startTime = Date.now();
+        }, Math.floor(Math.random() * 1000) + 2000);
+
+      } else if (event.target.classList.contains('ready')) { // 준비(빨강)화면
+        // 타이머 꺼야하는거 놓침
+        $screen.classList.replace('ready', 'waiting'); // 파랑화면으로 전환
+        $screen.textContent = '너무 빨랐어요'
+      } else if (event.target.classList.contains('now')) { // 클릭(초록)화면
+        // endTime = Date.now();
+        elapsedTime = Date.now() - startTime;
+        sum += elapsedTime;
+        $result.textContent = `현재 ${elapsedTime}ms, 평균: ${sum / ++i}ms`
+        $screen.classList.remove('now');
+        $screen.classList.add('waiting'); // 파랑화면으로 전환
+        $screen.textContent = '클릭해서 시작하세요';
+
+      }
+    });
+  </script>
+</body>
+
+</html>
