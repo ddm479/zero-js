@@ -50,8 +50,8 @@
             $ball.textContent = number;
             $parent.appendChild($ball);
         };
-
-        // 숫자 구간별로 공색 설정하기
+        ///////////////// 추가 /////////////////
+        // 1. 숫자 구간별로 공색 설정하기
         const colorize = (number, $tag) => {
             if (number < 10) {
                 $tag.style.backgroundColor = 'red';
@@ -68,6 +68,7 @@
                 $tag.style.color = 'white';
             }
         }
+        ////////////////////////////////////////////
 
         // 코드를 더 깔끔하게 만들기 위해 프로미스와 async/await 사용
         // async/await 문법은 프로미스에만 적용 가능하므로 setTimeout()을 setTimeoutPromise 고차함수로 변경함
@@ -142,12 +143,14 @@
             else if (count === 3) alert("5등 당첨")
             else alert("꽝")
 
-            // 추첨 초기화
+            ///////////////// 추가 /////////////////
+            // 2. 추첨 초기화
             $result.innerHTML = "추첨 결과는? ";
             $bonus.innerHTML = "보너스: ";
 
-            // 추첨 끝나면 버튼 활성화
+            // 3. 추첨 끝나면 버튼 활성화
             $btn.disabled = false;
+            ////////////////////////////////////
         })
 
 

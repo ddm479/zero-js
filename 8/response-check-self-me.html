@@ -12,15 +12,18 @@
       user-select: none;
     }
 
+    /* 초기화면 */
     #screen.waiting {
       background-color: aqua;
     }
 
+    /* 준비 화면 */
     #screen.ready {
       background-color: red;
       color: white;
     }
 
+    /* 클릭할 화면 */
     #screen.now {
       background-color: greenyellow;
     }
@@ -38,38 +41,35 @@
     let endTime;
     const records = [];
     let timeoutId;
-    $screen.addEventListener('click', function () {
+    $screen.addEventListener('click', () => {
       if ($screen.classList.contains('waiting')) { // 파랑
         $screen.classList.remove('waiting');
         $screen.classList.add('ready');
         $screen.textContent = '초록색이 되면 클릭하세요';
         timeoutId = setTimeout(function () {
-          startTime = new Date();
+          startTime = new Date(); // 시간 측정 시작
           $screen.classList.remove('ready');
           $screen.classList.add('now');
           $screen.textContent = '클릭하세요!';
         }, Math.floor(Math.random() * 1000) + 2000); // 2초에서 3초 사이 2000~3000 사이 수
       } else if ($screen.classList.contains('ready')) { // 빨강
         clearTimeout(timeoutId);
-        $screen.classList.remove('ready');
-        $screen.classList.add('waiting');
+        $screen.classList.replace('ready', 'waiting'); // 'ready'가 있으면 add + remove = replace
         $screen.textContent = '너무 성급하시군요!';
       } else if ($screen.classList.contains('now')) { // 초록
-        endTime = new Date();
+        endTime = new Date(); // 시간 측정 완료
         const current = endTime - startTime;
         records.push(current);
         const average = records.reduce((a, c) => a + c) / records.length;
-        $result.textContent = `현재 ${current}ms, 평균: ${average}ms`;
         ////////// 추가. 가장 빠른 상위 5개 기록 화면에 나타내기 ///////////////////
-        const topFive = records.sort((p, c) => p - c).slice(0, 5);
-        topFive.forEach((top, index) => {
-          $result.append(
-            document.createElement('br'),
-            `${index + 1}위: ${top}ms`,
-          );
-        });
-        /////////////////////////////////////////////////////////////////
-        startTime = null;
+        records.sort((a, b) => a - b);
+        if (records.length >= 6) {
+          $result.textContent = `현재: ${current}ms, 평균: ${average}ms, 기록들: ${records.slice(0, 5).join("ms, ")}ms`;
+        } else if (records.length < 6) {
+          $result.textContent = `현재: ${current} ms, 평균: ${average}ms, 기록들: ${records.join("ms, ")}ms`;
+        }
+        //////////////////////////////////////////////////////////
+        startTime = null; // 초기화 필수는 아니지만 혹시나해서
         endTime = null;
         $screen.classList.remove('now');
         $screen.classList.add('waiting');
