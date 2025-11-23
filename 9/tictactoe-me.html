@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>틱택토</title>
+  <style>
+    table {
+      border-collapse: collapse;
+    }
+
+    td {
+      border: 1px solid black;
+      width: 40px;
+      height: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- <table>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </table> -->
+  <script>
+    const { body } = document;
+
+    const $table = document.createElement('table');
+    const $result = document.createElement('div');
+    const rows = [
+      [],
+      [],
+      []
+    ];
+    let turn = 'O';
+
+    // rows의 각 셀이 초반에 다 undefined여서 그것도 체크하면 너무 복잡하고 아래 코드( undefined 체크 미구현 )도 복잡해서 챗지피티 사용
+    // const checkWinner = () => {
+    //   let stand
+    //   console.log(rows)
+    //   // 가로체크
+    //   for (let r = 0; r < 3; r++) {
+    //     stand = rows[r][0];
+    //     for (let c = 1; c < 3; c++) {
+    //       if (rows[r][c] !== stand) break;
+    //       if (c === 2) return true;
+    //     }
+    //   }
+    //   // 세로체크
+    //   for (let c = 0; c < 3; c++) {
+    //     stand = rows[0][c];
+    //     for (let r = 1; r < 3; r++) {
+    //       if (rows[r][c] !== stand) break;
+    //       if (r === 2) return true;
+    //     }
+    //   }
+    //   stand = rows[1][1];
+    //   // 대각선 체크
+    //   if (rows[0][0] === stand && rows[2][2] === stand) return true;
+    //   if (rows[2][0] === stand && rows[0][2] === stand) return true;
+    //   return false;
+    // }
+
+    // 위의 기존코드는 알고리즘은 거의 맞으나 코드가 복잡해서 챗지피티 버젼으로 변경
+    const checkWinner = () => {
+      // 가로 체크
+      for (let r = 0; r < 3; r++) {
+        if (rows[r][0] && rows[r].every(cell => cell === rows[r][0])) {
+          return true;
+        }
+      }
+
+      // 세로 체크
+      for (let c = 0; c < 3; c++) {
+        if (rows[0][c] && [0, 1, 2].every(r => rows[r][c] === rows[0][c])) {
+          return true;
+        }
+      }
+
+      // 대각선 체크
+      // ↘
+      if (rows[1][1] && rows[0][0] === rows[1][1] && rows[1][1] === rows[2][2]) {
+        return true;
+      }
+      // ↙
+      if (rows[1][1] && rows[0][2] === rows[1][1] && rows[1][1] === rows[2][0]) {
+        return true;
+      }
+
+      return false;
+    };
+
+
+    const callback = (event) => {
+      // 클릭했던 구역인가?
+      if (event.target.textContent) return;
+
+      // 빈칸이면 해당 구역에 표시
+      event.target.textContent = turn;
+      const $td = event.target.closest("td");
+      console.log($td);
+      // if (!$td) return;
+
+      const r = +$td.dataset.row; // dataset의 값은 문자열, '+'를 붙이면 숫자가 됨
+      const c = +$td.dataset.col;
+
+      rows[r][c] = turn;      // 배열에 저장
+      // $td.textContent = "X"; // 화면에도 표시
+
+      // 승부가 났는가?
+      if (checkWinner()) {
+        $result.textContent = `승자는 ${turn}플레이어 입니다.`;
+        // 이벤트 리스너 제거 빠짐
+        return;
+      };
+
+      // 무승부인가?
+      if (rows.flat().every(cell => cell.textContent)) {
+        $result.textContent = `무승부입니다.`
+        return;
+      };
+
+      turn = (turn === 'O') ? 'X' : 'O'; // 턴을 넘긴다
+    }
+    // 2차원 배열 화면에 표시하기는 못함
+    for (let r = 0; r < 3; r++) {
+      const $tr = document.createElement('tr');
+      for (let c = 0; c < 3; c++) {
+        const $td = document.createElement('td');
+        // 셀에 row/col 데이터 저장
+        $td.dataset.row = r;
+        $td.dataset.col = c;
+
+        $tr.append($td);
+      }
+      $table.append($tr);
+    }
+    console.log(rows, rows[1][1])
+    $table.addEventListener('click', callback);
+    body.append($table);
+    body.append($result);
+  </script>
+</body>
+
+</html>
