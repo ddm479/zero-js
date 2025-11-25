@@ -98,7 +98,13 @@
         $battleMenu.style.display = 'block';
         monster = JSON.parse(
           JSON.stringify(monsterList[Math.floor(Math.random() * monsterList.length)])
-        );
+        ); // 1. 객체 깊은복사
+        // 복사하면 서로 독립적이다
+        // monster2 = monsterList[0]; // 2. 객체를 대입하면 객체참조
+        // 참조하면 서로 연결돼서 둘 중 하나만 바뀌어도 다른 하나도 따라 바뀐다.  
+        // monster3 = { ...monsterList[0] } // 3. 얕은복사
+        // console.log(monsterList[0] === monster); // false, 깊은 복사
+        // console.log(monsterList[0] === monster2); // true, 참조 관계
         monster.maxHp = monster.hp;
         $monsterName.textContent = monster.name;
         $monsterHp.textContent = `HP: ${monster.hp}/${monster.maxHp}`;
