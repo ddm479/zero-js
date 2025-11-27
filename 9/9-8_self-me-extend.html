@@ -108,76 +108,102 @@
       turn = turn === 'X' ? 'O' : 'X';
     };
 
-    function findTwoLine(player) {
+    ///////////// extend - 컴퓨터에 지능 부여하기 ////////////////////////////////////////
+
+    // 배열에서 특정 value 개수 세는 함수
+    const countValue = (arr, value) => {
+      return arr.filter(td => (td.textContent ?? td) === value).length;
+    }
+
+    // 행, 열, 대각케이스들을 한 라인으로 추상화해서 검사하는 함수
+    const checkLine = (lineInfo, player) => {
+      const { cells, coords } = lineInfo; // cells: 값 배열, coords: 해당값의 좌표배열
+
+      const countO = countValue(cells, player);
+      const countEmpty = countValue(cells, '');
+
+      // 한 라인에 같은 표시가 2개 들어 있고 1칸은 빈칸이면 게임 승리/패배 조건에 거의 다가온거다.
+      if (countO === 2 && countEmpty === 1) {
+        const idx = cells.findIndex(v => (v.textContent ?? v) === '');
+        return coords[idx]; // 좌표를 반환
+      }
+      return null;
+    };
+
+    // 한 라인에 2개가 들어있는지 체크
+    const findTwoLine = (player) => {
+      const lines = [];
+      // cells: 값 배열, coords: 해당값의 좌표배열
+
       // 1) 행 체크
       for (let r = 0; r < 3; r++) {
-        const row = rows[r];
-        const values = row.map(td => td.textContent);
-        const countO = values.filter(v => v === player).length;
-        const countEmpty = values.filter(v => v === '').length;
-
-        if (countO === 2 && countEmpty === 1) {
-          const emptyIndex = values.indexOf('');
-          return { r, c: emptyIndex };
-        }
+        lines.push({
+          cells: rows[r],  // 얘만 <td> 배열
+          coords: [
+            { r, c: 0 }, { r, c: 1 }, { r, c: 2 }
+          ]
+        });
       }
 
       // 2) 열 체크
       for (let c = 0; c < 3; c++) {
-        const col = [
-          rows[0][c].textContent,
-          rows[1][c].textContent,
-          rows[2][c].textContent
-        ];
-        const countO = col.filter(v => v === player).length;
-        const countEmpty = col.filter(v => v === '').length;
-
-        if (countO === 2 && countEmpty === 1) {
-          const emptyIndex = col.indexOf('');
-          return { r: emptyIndex, c };
-        }
+        lines.push({     // 여기부터 <td>.textContent 배열
+          cells: [
+            rows[0][c].textContent,
+            rows[1][c].textContent,
+            rows[2][c].textContent
+          ],
+          coords: [
+            { r: 0, c }, { r: 1, c }, { r: 2, c }
+          ]
+        });
       }
 
       // 3) 대각선 ↘ 체크
-      {
-        const diag = [
+      lines.push({
+        cells: [
           rows[0][0].textContent,
           rows[1][1].textContent,
-          rows[2][2].textContent,
-        ];
-        const countO = diag.filter(v => v === player).length;
-        const countEmpty = diag.filter(v => v === '').length;
-
-        if (countO === 2 && countEmpty === 1) {
-          const emptyIndex = diag.indexOf('');
-          return { r: emptyIndex, c: emptyIndex };
-        }
-      }
+          rows[2][2].textContent
+        ],
+        coords: [
+          { r: 0, c: 0 },
+          { r: 1, c: 1 },
+          { r: 2, c: 2 }
+        ]
+      });
 
       // 4) 대각선 ↙ 체크
-      {
-        const diag = [
+      lines.push({
+        cells: [
           rows[0][2].textContent,
           rows[1][1].textContent,
-          rows[2][0].textContent,
-        ];
-        const countO = diag.filter(v => v === player).length;
-        const countEmpty = diag.filter(v => v === '').length;
+          rows[2][0].textContent
+        ],
+        coords: [
+          { r: 0, c: 2 },
+          { r: 1, c: 1 },
+          { r: 2, c: 0 }
+        ]
+      });
 
-        if (countO === 2 && countEmpty === 1) {
-          const emptyIndex = diag.indexOf('');
-          const map = [
-            { r: 0, c: 2 },
-            { r: 1, c: 1 },
-            { r: 2, c: 0 },
-          ];
-          return map[emptyIndex];
-        }
+      // 모든 라인을 순회하며 체크
+      for (const line of lines) {
+        const result = checkLine(line, player);
+        if (result) return result;
       }
 
       return null;
     }
 
+    // 1초 뒤에 화면에 표시하고 승부 체크하기
+    const updateGameAfterDelay = (cell, player) => {
+      setTimeout(() => {
+        cell.textContent = player;
+        checkWinnerAndDraw(cell);
+        clickable = true;
+      }, 1000)
+    }
 
     let clickable = true;
     const callback = (event) => {
@@ -195,34 +221,25 @@
       checkWinnerAndDraw(event.target);
       if (turn === 'X') {
         clickable = false;
-        let best = findTwoLine('X');
+        const best = findTwoLine('X');
+        // 'X'가 2개인 라인이 있다면 = 이번 차례에 컴퓨터('X')가 끝낼 수 있으면
         if (best) {
           const { r, c } = best;
-          setTimeout(() => {
-            rows[r][c].textContent = 'X';
-            checkWinnerAndDraw(rows[r][c]);
-            clickable = true;
-          }, 1000)
+          updateGameAfterDelay(rows[r][c], 'X');
           return;
         }
-        let pos = findTwoLine('O');
-        if (!pos) {
-          // 그런 O가 2개인 라인이 없다
-          const emptyCells = rows.flat().filter((v) => !v.textContent);
-          const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-          setTimeout(() => {
-            randomCell.textContent = 'X';
-            checkWinnerAndDraw(randomCell);
-            clickable = true;
-          }, 1000);
+
+        const pos = findTwoLine('O');
+        // 'O'가 2개인 라인이 있다면 = 이번 차례에 컴퓨터가 막아야 한다면
+        if (pos) {
+          const { r, c } = pos;
+          updateGameAfterDelay(rows[r][c], 'X');
           return;
         }
-        const { r, c } = pos;
-        setTimeout(() => {
-          rows[r][c].textContent = 'X';
-          checkWinnerAndDraw(rows[r][c]);
-          clickable = true;
-        }, 1000)
+        // 'O'가 2개인 라인이 없다
+        const emptyCells = rows.flat().filter((v) => !v.textContent);
+        const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        updateGameAfterDelay(randomCell, 'X');
       }
     };
     //////////////////////////////////////////////////////////////////////
