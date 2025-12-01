@@ -83,33 +83,42 @@
     }
 
     const onClickCard = (event) => {
-      console.log(event.target.parentNode.parentNode);
-      const card = event.target.parentNode.parentNode; // div.card
-      card.classList.add('flipped'); // 카드 뒤집고
-      clicked.push(card); // 클릭한 카드배열에 추가
+      if (!clickable) return;
+      console.log(event.currentTarget, event.target, event.target.parentNode.parentNode);
+      const clickedCard = event.target.parentNode.parentNode; // div.card
+
+      // 전에 클릭했던(뒤집은) 카드인가?
+      if (clickedCard === clicked[clicked.length - 1]) return;
+      clickedCard.classList.add('flipped'); // 카드 뒤집고
+      clicked.push(clickedCard); // 클릭한 카드배열에 추가
       console.log(clicked)
-      console.log(card.querySelector('.card-back').style.backgroundColor);
-      if (clicked.length < 2) {
+      console.log(clickedCard.querySelector('.card-back').style.backgroundColor);
+      if (clicked.length !== 2) {
         return
       }
+
       // 2장이 되었다면
-      // 두 카드의 뒷면이 똑같은가?
-      const areCardsBacksEqual = clicked.every((c) => c.querySelector('.card-back').style.backgroundColor === clicked[0].querySelector('.card-back').style.backgroundColor)
+      clickable = false;
+      const areCardsBacksEqual = clicked.every((card) => card.querySelector('.card-back').style.backgroundColor === clicked[0].querySelector('.card-back').style.backgroundColor)
       console.log(areCardsBacksEqual)
+
+      // 두 카드의 뒷면이 똑같은가?
       if (areCardsBacksEqual) {
         completed.push(...clicked)
-        clicked.map((c) => { c.removeEventListener('click', onClickCard); })
+        clicked.forEach((card) => { card.removeEventListener('click', onClickCard); })
         clicked.length = 0; // clicked 배열 비우기
         if (completed.length === total) {
-          setTimeout(() => { alert(축하합니다) }, 1000)
+          setTimeout(() => { alert('축하합니다') }, 1000)
         }
+        clickable = true;
         return
       }
 
       setTimeout(() => {
-        clicked.map((c) => { c.classList.remove('flipped'); })
-      }, 2000)
-      // clicked.length = 0; // clicked 배열 비우기
+        clicked.forEach((card) => { card.classList.remove('flipped'); });
+        clicked.length = 0; // clicked 배열 비우기
+        clickable = true;
+      }, 1000)
     }
 
     function startGame() {
