@@ -49,7 +49,114 @@
     const $timer = document.querySelector('#timer');
     const $tbody = document.querySelector('#table tbody');
     const $result = document.querySelector('#result');
+    const $row = document.querySelector('#row');
+    const $col = document.querySelector('#cell');
+    const $mine = document.querySelector('#mine');
 
+    let row = 10;
+    let col = 10;
+    let mine = 10;
+    let board;
+    const directions = [
+      [-1, -1], [-1, 0], [-1, 1],
+      [0, -1], [0, 1],
+      [1, -1], [1, 0], [1, 1]
+    ];
+
+
+    const drawTable = () => {
+      for (let i = 0; i < row; i++) {
+        const trow = document.createElement("tr");
+        for (let j = 0; j < col; j++) {
+          const tcell = document.createElement("td");
+          trow.appendChild(tcell);
+        }
+        $tbody.appendChild(trow);
+      }
+      board = Array.from({ length: row }, () => Array(col).fill(0));
+      for (let i = 0; i < mine; i++) {
+        let r, c;
+
+        // 중복 위치 피하기 위해 랜덤 좌표 생성
+        do {
+          r = Math.floor(Math.random() * row);
+          c = Math.floor(Math.random() * col);
+        } while (board[r][c] !== 0); // 이미 값이 있으면 다시
+
+        board[r][c] = -1; // -1을 지뢰라고 가정
+      }
+      board.forEach((rArr, r) =>
+        rArr.forEach((val, c) =>
+          val === -1 && directions.forEach(([dr, dc]) => {
+            const nr = r + dr, nc = c + dc;
+            nr >= 0 && nr < row && nc >= 0 && nc < col && board[nr][nc] !== -1 && board[nr][nc]++;
+          })
+        )
+      );
+      console.log(board);
+    }
+
+    const onSubmit = (event) => {
+      event.preventDefault();
+      row = parseInt($row.value);
+      col = parseInt($col.value);
+      mine = parseInt($mine.value);
+      if (isNaN(row)) row = 0; // NaN 체크
+      if (isNaN(col)) col = 0;
+      if (isNaN(mine)) mine = 0;
+      //drawTable();
+    }
+
+    const onRightClick = (event) => {
+      event.preventDefault();
+      const td = event.target;
+      const cls = td.classList;
+      console.log(td, td.textContent);
+      // 이미 열린(밝혀진)칸인가?
+      if (cls.contains('opened')) {
+        return;
+      }
+      // 깃발 칸인가?
+      if (cls.contains('flag')) {
+        cls.replace('flag', 'question');
+        td.textContent = '?';
+        return;
+      } else if (cls.contains('question')) {
+        // '?' 칸인가?
+        cls.remove('question');
+        td.textContent = '';
+        return;
+      } else {
+        // 아니라면 깃발표시
+        cls.add('flag');
+        td.textContent = '!';
+      }
+
+      //if (cls.matches(''))
+
+    }
+    const onLeftClick = (event) => {
+      const td = event.target;
+      console.log(td);
+      const rowIndex = td.parentNode.rowIndex;
+      const cellIndex = td.cellIndex;
+      // 이미 열린칸 또는 깃발 칸 또는 '?'칸인가?
+      if (td.matches('opened', 'flag', 'question')) {
+        return;
+      }
+      if (board[rowIndex][cellIndex] === -1) {
+        td.textContent = '펑';
+
+        return;
+      }
+
+    }
+    drawTable();
+    $form.addEventListener('submit', onSubmit);
+
+    // 노트북 터치 패드 우클릭 후 click이벤트 발생 이슈, 하드웨어 문제인듯
+    $tbody.addEventListener('contextmenu', onRightClick);
+    $tbody.addEventListener('click', onLeftClick);
   </script>
 </body>
 
