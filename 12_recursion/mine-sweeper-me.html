@@ -47,24 +47,39 @@
   <script>
     const $form = document.querySelector('#form');
     const $timer = document.querySelector('#timer');
+    const $table = document.querySelector('#table');
     const $tbody = document.querySelector('#table tbody');
     const $result = document.querySelector('#result');
     const $row = document.querySelector('#row');
     const $col = document.querySelector('#cell');
     const $mine = document.querySelector('#mine');
 
-    let row = 10;
-    let col = 10;
-    let mine = 10;
+    // 숫자 나중에 동적으로 변경하기
+    let row = 5;
+    let col = 5;
+    let mine = 2;
+    let openedNotMineCells = 0; // 지뢰를 제외한 열린 칸 수
+    const totalNotMineCells = row * col - mine; // 지뢰를 제외한 모든 칸 수
     let board;
+    const rows = $table.rows;
+    let startTime;
+
+
+    // 상하좌우 + 대각선 방향
     const directions = [
-      [-1, -1], [-1, 0], [-1, 1],
-      [0, -1], [0, 1],
-      [1, -1], [1, 0], [1, 1]
+      [-1, 0], // 위
+      [1, 0], // 아래
+      [0, -1], // 왼쪽
+      [0, 1], // 오른쪽
+      [-1, -1], // 왼쪽 위 대각
+      [-1, 1], // 오른쪽 위 대각
+      [1, -1], // 왼쪽 아래 대각
+      [1, 1]  // 오른쪽 아래 대각
     ];
 
 
     const drawTable = () => {
+      // 화면에 테이블 생성
       for (let i = 0; i < row; i++) {
         const trow = document.createElement("tr");
         for (let j = 0; j < col; j++) {
@@ -74,26 +89,31 @@
         $tbody.appendChild(trow);
       }
       board = Array.from({ length: row }, () => Array(col).fill(0));
+
+      // 지뢰 랜덤으로 배치하기
       for (let i = 0; i < mine; i++) {
         let r, c;
-
-        // 중복 위치 피하기 위해 랜덤 좌표 생성
         do {
           r = Math.floor(Math.random() * row);
           c = Math.floor(Math.random() * col);
         } while (board[r][c] !== 0); // 이미 값이 있으면 다시
-
         board[r][c] = -1; // -1을 지뢰라고 가정
       }
+
+      // 주변에 지뢰가 있는 칸들 중 주변에 지뢰 몇개인지 저장
+      // -1: 지뢰, 0: 근처에 지뢰값 없다, 1 이상의 정수: 근처의 지뢰 개수
       board.forEach((rArr, r) =>
         rArr.forEach((val, c) =>
           val === -1 && directions.forEach(([dr, dc]) => {
             const nr = r + dr, nc = c + dc;
+            // 유효한 칸인지 체크
             nr >= 0 && nr < row && nc >= 0 && nc < col && board[nr][nc] !== -1 && board[nr][nc]++;
+            // 앞 조건이 false면 뒤를 실행하지 않음, 마지막 전까지 전부 true면 -> 마지막 실행한다.
           })
         )
       );
       console.log(board);
+      startTime = new Date();
     }
 
     const onSubmit = (event) => {
@@ -111,7 +131,7 @@
       event.preventDefault();
       const td = event.target;
       const cls = td.classList;
-      console.log(td, td.textContent);
+      console.log('onRightClick: ', td, td.textContent);
       // 이미 열린(밝혀진)칸인가?
       if (cls.contains('opened')) {
         return;
@@ -132,24 +152,58 @@
         td.textContent = '!';
       }
 
-      //if (cls.matches(''))
-
     }
     const onLeftClick = (event) => {
       const td = event.target;
-      console.log(td);
+      console.log('onLeftClick: ', event, td);
+      open(td);
+
+      // 지뢰를 제외하고 모든칸을 다 열었나?
+      if (openedNotMineCells === totalNotMineCells) {
+        $result.textContent = `${((new Date() - startTime) / 1000).toFixed(2)}초 걸렸습니다`;
+        $tbody.removeEventListener('contextmenu', onRightClick);
+        $tbody.removeEventListener('click', onLeftClick);
+      }
+    }
+    // 칸 열기
+    const open = (td) => {
+      const cls = td.classList;
       const rowIndex = td.parentNode.rowIndex;
       const cellIndex = td.cellIndex;
+      const value = board[rowIndex][cellIndex];
       // 이미 열린칸 또는 깃발 칸 또는 '?'칸인가?
-      if (td.matches('opened', 'flag', 'question')) {
+      if (td.matches('.opened, .flag, .question')) {
         return;
       }
-      if (board[rowIndex][cellIndex] === -1) {
+      // 지뢰 칸인가?
+      if (value === -1) {
+        cls.add('opened');
         td.textContent = '펑';
-
-        return;
+        setTimeout(() => {
+          alert('실패');
+          window.location.reload();
+        }, 1000);
+      } else if (value > 0) {
+        // 숫자 칸인가?
+        cls.add('opened');
+        td.textContent = value;
+        openedNotMineCells++;
+      } else if (value === 0) {
+        // 값이 없는 칸인가?
+        cls.add('opened'); // 일단 현재 칸 열고
+        openedNotMineCells++;
+        for (const [dr, dc] of directions) {
+          const r = rowIndex + dr;
+          const c = cellIndex + dc;
+          const neighborCell = rows[r]?.cells[c]; // 주변 칸
+          // 옵셔널 체이닝 -> = rows[r] && rows[r].cells[c]
+          // 유효한 위치인지 체크하고 열린적이 없다면
+          if (neighborCell && !neighborCell.classList.contains('opened')) {
+            open(neighborCell); // 주변 칸을 연다
+          }
+        }
       }
-
+      console.log(openedNotMineCells)
     }
     drawTable();
     $form.addEventListener('submit', onSubmit);
