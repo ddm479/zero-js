@@ -83,11 +83,12 @@
     }
     $form.addEventListener('submit', onSubmit);
 
+    // 지뢰 랜덤하게 심기
     function plantMine() {
       const candidate = Array(row * cell).fill().map((arr, i) => {
         return i;
       });
-      const shuffle = [];
+      const shuffle = []; // 지뢰 전용 1차원 배열
       while (candidate.length > row * cell - mine) {
         const chosen = candidate.splice(Math.floor(Math.random() * candidate.length), 1)[0];
         shuffle.push(chosen);
@@ -101,6 +102,7 @@
         }
       }
 
+      // 지뢰 표시
       for (let k = 0; k < shuffle.length; k++) {
         const ver = Math.floor(shuffle[k] / cell); // 7번째 줄
         const hor = shuffle[k] % cell; // 1번째 칸
@@ -145,9 +147,11 @@
     // 1 2 3
     // 4 5 6
     // 7 8 9
+    // 주변 지뢰 개수 세기
     function countMine(rowIndex, cellIndex) {
       const mines = [CODE.MINE, CODE.QUESTION_MINE, CODE.FLAG_MINE];
       let i = 0;
+      // a && b -> a가 true면 b를 실행해라
       mines.includes(data[rowIndex - 1]?.[cellIndex - 1]) && i++;
       mines.includes(data[rowIndex - 1]?.[cellIndex]) && i++;
       mines.includes(data[rowIndex - 1]?.[cellIndex + 1]) && i++;
@@ -160,22 +164,26 @@
     }
 
     function open(rowIndex, cellIndex) {
+      // 열린 칸인가?
       if (data[rowIndex]?.[cellIndex] >= CODE.OPENED) return;
       const target = $tbody.children[rowIndex]?.children[cellIndex];
       if (!target) {
         return;
       }
       const count = countMine(rowIndex, cellIndex);
+      // a || b -> a가 false면 b실행
       target.textContent = count || '';
       target.className = 'opened';
       data[rowIndex][cellIndex] = count;
       openCount++;
       console.log(openCount);
+      // 모든 칸을 다 열었는가?
       if (openCount === row * cell - mine) {
         const time = (new Date() - startTime) / 1000;
         clearInterval(interval);
         $tbody.removeEventListener('contextmenu', onRightClick);
         $tbody.removeEventListener('click', onLeftClick);
+        // alert에 setTimeout()을 준거는 화면이 바뀌는 시간을 기다리려고
         setTimeout(() => {
           alert(`승리했습니다! ${time}초가 걸렸습니다.`);
         }, 500);
@@ -223,7 +231,7 @@
         row.forEach((cell) => {
           const $td = document.createElement('td');
           if (cell === CODE.MINE) {
-            // $td.textContent = 'X'; // 개발 편의를 위해
+            // $td.textContent = 'X'; // 개발 편의를 위해, 지뢰 표시용
           }
           $tr.append($td);
         });

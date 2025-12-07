@@ -77,6 +77,10 @@
       [1, 1]  // 오른쪽 아래 대각
     ];
 
+    const updateTimer = () => {
+      const elapsed = Math.floor((new Date() - startTime) / 1000);
+      $timer.textContent = `${elapsed}초`;
+    }
 
     const drawTable = () => {
       // 화면에 테이블 생성
@@ -109,6 +113,7 @@
             // 유효한 칸인지 체크
             nr >= 0 && nr < row && nc >= 0 && nc < col && board[nr][nc] !== -1 && board[nr][nc]++;
             // 앞 조건이 false면 뒤를 실행하지 않음, 마지막 전까지 전부 true면 -> 마지막 실행한다.
+            // a && b 연장함
           })
         )
       );
@@ -163,6 +168,7 @@
         $result.textContent = `${((new Date() - startTime) / 1000).toFixed(2)}초 걸렸습니다`;
         $tbody.removeEventListener('contextmenu', onRightClick);
         $tbody.removeEventListener('click', onLeftClick);
+        clearInterval(intervalId);
       }
     }
     // 칸 열기
@@ -179,9 +185,12 @@
       if (value === -1) {
         cls.add('opened');
         td.textContent = '펑';
+        $tbody.removeEventListener('click', onLeftClick);
+        $tbody.removeEventListener('contextmenu', onRightClick);
+        clearInterval(intervalId);
+        // alert에 setTimeout()을 준거는 화면이 바뀌는 시간을 기다리려고
         setTimeout(() => {
           alert('실패');
-          window.location.reload();
         }, 1000);
       } else if (value > 0) {
         // 숫자 칸인가?
@@ -197,7 +206,7 @@
           const c = cellIndex + dc;
           const neighborCell = rows[r]?.cells[c]; // 주변 칸
           // 옵셔널 체이닝 -> = rows[r] && rows[r].cells[c]
-          // 유효한 위치인지 체크하고 열린적이 없다면
+          // 주변 칸이 유효한 위치인지 체크하고 열린적이 없다면
           if (neighborCell && !neighborCell.classList.contains('opened')) {
             open(neighborCell); // 주변 칸을 연다
           }
@@ -206,6 +215,7 @@
       console.log(openedNotMineCells)
     }
     drawTable();
+    const intervalId = setInterval(updateTimer, 1000);
     $form.addEventListener('submit', onSubmit);
 
     // 노트북 터치 패드 우클릭 후 click이벤트 발생 이슈, 하드웨어 문제인듯
