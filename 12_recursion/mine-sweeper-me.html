@@ -55,9 +55,9 @@
     const $mine = document.querySelector('#mine');
 
     // 숫자 나중에 동적으로 변경하기
-    let row = 5;
-    let col = 5;
-    let mine = 2;
+    let row = 10;
+    let col = 10;
+    let mine = 10;
     let openedNotMineCells = 0; // 지뢰를 제외한 열린 칸 수
     const totalNotMineCells = row * col - mine; // 지뢰를 제외한 모든 칸 수
     let board;
@@ -123,12 +123,13 @@
 
     const onSubmit = (event) => {
       event.preventDefault();
+      console.log(event.target, event.target.row);
       row = parseInt($row.value);
-      col = parseInt($col.value);
-      mine = parseInt($mine.value);
+      // 단축평가, a || b -> a가 false면 b실행
+      col = parseInt(event.target.cell.value) || 0;
+      // <form>요소 submit 이벤트 핸들러에서 폼 내부의 모든 name 속성을 가진 입력 요소를 마치 폼 객체의 속성처럼 접근할 수 있도록 해줍니다.
+      mine = parseInt($mine.value) || 0;
       if (isNaN(row)) row = 0; // NaN 체크
-      if (isNaN(col)) col = 0;
-      if (isNaN(mine)) mine = 0;
       //drawTable();
     }
 
@@ -162,6 +163,10 @@
       const td = event.target;
       console.log('onLeftClick: ', event, td);
       open(td);
+      // 사용자가 직접 좌클릭했을 때만 깃발/물음표 클릭을 막는다
+      if (td.matches('.flag, .question')) {
+        return;
+      }
 
       // 지뢰를 제외하고 모든칸을 다 열었나?
       if (openedNotMineCells === totalNotMineCells) {
@@ -178,7 +183,8 @@
       const cellIndex = td.cellIndex;
       const value = board[rowIndex][cellIndex];
       // 이미 열린칸 또는 깃발 칸 또는 '?'칸인가?
-      if (td.matches('.opened, .flag, .question')) {
+      // if (cls.contains('opened') || ['!', '?'].includes(td.textContent)) return;
+      if (cls.contains('opened')) {
         return;
       }
       // 지뢰 칸인가?
@@ -200,6 +206,7 @@
       } else if (value === 0) {
         // 값이 없는 칸인가?
         cls.add('opened'); // 일단 현재 칸 열고
+        td.textContent = '';
         openedNotMineCells++;
         for (const [dr, dc] of directions) {
           const r = rowIndex + dr;
