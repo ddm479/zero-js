@@ -162,11 +162,12 @@
     const onLeftClick = (event) => {
       const td = event.target;
       console.log('onLeftClick: ', event, td);
-      open(td);
-      // 사용자가 직접 좌클릭했을 때만 깃발/물음표 클릭을 막는다
+      // 깃발 혹은 '?' 표시한 부분 좌클릭 막기
       if (td.matches('.flag, .question')) {
         return;
       }
+      open(td);
+
 
       // 지뢰를 제외하고 모든칸을 다 열었나?
       if (openedNotMineCells === totalNotMineCells) {
@@ -182,8 +183,7 @@
       const rowIndex = td.parentNode.rowIndex;
       const cellIndex = td.cellIndex;
       const value = board[rowIndex][cellIndex];
-      // 이미 열린칸 또는 깃발 칸 또는 '?'칸인가?
-      // if (cls.contains('opened') || ['!', '?'].includes(td.textContent)) return;
+      // 이미 열린칸인가?
       if (cls.contains('opened')) {
         return;
       }
@@ -199,12 +199,24 @@
           alert('실패');
         }, 1000);
       } else if (value > 0) {
-        // 숫자 칸인가?
+        // 숫자 칸이면
+        cls.forEach(c => {
+          // 혹시 깃발이나 '?'표시를 해놨다면
+          if (c === "flag" || c === "question") {
+            cls.remove(c); // 해당 표시 제거하기
+          }
+        })
         cls.add('opened');
         td.textContent = value;
         openedNotMineCells++;
       } else if (value === 0) {
-        // 값이 없는 칸인가?
+        // 값이 없는 칸이면
+        cls.forEach(c => {
+          // 혹시 깃발이나 '?'표시를 해놨다면
+          if (c === "flag" || c === "question") {
+            cls.remove(c); // 해당 표시 제거하기
+          }
+        })
         cls.add('opened'); // 일단 현재 칸 열고
         td.textContent = '';
         openedNotMineCells++;
