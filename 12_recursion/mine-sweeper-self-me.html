@@ -67,6 +67,7 @@
     let interval;
     let isFirstClick = true;
     const dev = false; // 개발자용 지뢰표시여부
+    const searched = Array.from({ length: row }, () => Array(cell).fill(false));
 
     // 방법1. 첫 클릭하고 지뢰 배치하기
     // 방법2. 지뢰 배치하고 첫 클릭했을때 지뢰면 지뢰 옆으로 옮기기
@@ -156,6 +157,7 @@
       const mines = [CODE.MINE, CODE.QUESTION_MINE, CODE.FLAG_MINE];
       let i = 0;
       // a && b -> a가 true면 b를 실행해라
+      // 해당 칸 유효한 위치인지 체크하고 지뢰면 1증가
       mines.includes(data[rowIndex - 1]?.[cellIndex - 1]) && i++;
       mines.includes(data[rowIndex - 1]?.[cellIndex]) && i++;
       mines.includes(data[rowIndex - 1]?.[cellIndex + 1]) && i++;
@@ -212,19 +214,34 @@
     }
 
     const transferMine = (rowIndex, cellIndex, cellData) => {
-      // 유효한 칸인가?
-      if (rowIndex < 0 || cellIndex < 0 || rowIndex >= row || cellIndex >= cell) return;
+      searched[rowIndex][cellIndex] = true;
+      // 근처칸이 유효한 칸인가?
+      if (rowIndex < 0 || cellIndex < 0 || rowIndex >= row || cellIndex >= cell) return cellData;
 
+      const mines = [CODE.MINE, CODE.QUESTION_MINE, CODE.FLAG_MINE];
       // 지뢰인가?
-      if (data[rowIndex][cellIndex] === CODE.MINE) return;
+      if (mines.includes(data[rowIndex][cellIndex])) return cellData;
+
+      const notMines = [CODE.NORMAL, CODE.QUESTION, CODE.FLAG];
+      // 닫힌 칸(숫자 칸 또는 빈칸)이거나 '깃발' 또는 '?'표시이면 
+      if (notMines.includes(data[rowIndex][cellIndex])) {
+        data[rowIndex][cellIndex] = cellData;
+        // 값을 교환하는데 깃발이나 '?'표시는 '지뢰 없음'으로 return
+        return CODE.NORMAL;
+      }
     }
-    const search = (rowIndex, cellIndex) => {
+    const search = (rowIndex, cellIndex, cellData) => {
       for (let i = -1; i < 2; i++) {
         for (let j = -1; j < 2; j++) {
-          searched.push([rowIndex + i, cellIndex + j])
-          transferMine(rowIndex + i, cellIndex + j, cellData);
-          // 닫힌 칸(숫자)면
-          if (cellData === CODE.NORMAL) return;
+          // 조회했던거는 제외
+          if (searched[rowIndex + i, cellIndex + j]) { continue }
+          data[rowIndex][cellIndex] = transferMine(rowIndex + i, cellIndex + j, cellData);
+          searched.push([rowIndex + i, cellIndex + j]);
+          // 닫힌 칸이면
+          if (data[rowIndex][cellIndex] === CODE.NORMAL) {
+            openAround(rowIndex, cellIndex);
+            return;
+          }
         }
       }
     }
@@ -237,30 +254,11 @@
       // 첫 클릭인가?
       if (isFirstClick) {
         // 지뢰인가?
-        while (cellData === CODE.MINE) {
-          // 지뢰면 지뢰를 근처로 옮긴다.
-          transferMine(rowIndex, cellIndex);
-          // 근처 칸과 변경해서 교환한다
-          //  근처칸이 유효한 칸인가?
-          search(rowIndex, cellIndex);
-
-
-
-
-          // if () {
-          //   transferMine();
-          //   return;
-          // }
-
-
-          // 유효한 칸이면
-          // 그 칸이 지뢰인가?
-        }
-        // 지뢰아니고 닫힌 칸이면
-        if (cellData === CODE.NORMAL) {
-          openAround(rowIndex, cellIndex);
-          return;
-        }
+        if (cellData === CODE.MINE) {
+          // 지뢰면 근처 칸 조회하고 지뢰를 근처 칸과 변경해서 교환한다
+          search(rowIndex, cellIndex, cellData);
+        } else if (cellData === CODE.NORMAL) { openAround(rowIndex, cellIndex); }
+        console.log(data);
         isFirstClick = false;
         return;
       }
@@ -274,6 +272,7 @@
         $tbody.removeEventListener('click', onLeftClick);
       } // 나머지는 무시
       // 아무 동작도 안 함
+      console.log(data);
     }
 
     function drawTable() {
@@ -292,6 +291,7 @@
         $tbody.addEventListener('contextmenu', onRightClick);
         $tbody.addEventListener('click', onLeftClick);
       });
+      console.log(data);
     }
   </script>
 </body>
