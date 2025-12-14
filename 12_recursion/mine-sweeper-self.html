@@ -202,6 +202,8 @@
       }, 0);
     }
 
+    //////// 지뢰 배치하고 첫 클릭했을때 지뢰면 지뢰 옆으로 옮기기-추가 ///////////////////////////
+    // 첫 클릭했을때 무조건 지뢰 안 걸리게하기 - 추가
     let normalCellFound = false;
     let searched;
     let firstClick = true;
@@ -224,7 +226,7 @@
         transferMine(rI + 1, cI + 1);
       }
     }
-
+    // 지뢰 다 보이게 하기
     function showMines() {
       const mines = [CODE.MINE, CODE.QUESTION_MINE, CODE.FLAG_MINE];
       data.forEach((row, rowIndex) => {
@@ -235,7 +237,7 @@
         });
       });
     }
-
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     function onLeftClick(event) {
       const target = event.target; // td 태그겠죠?
       const rowIndex = target.parentNode.rowIndex;

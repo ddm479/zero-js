@@ -216,7 +216,7 @@
     }
 
     const transferMine = (rowIndex, cellIndex, cellData) => {
-      searched[rowIndex][cellIndex] = true;
+      // searched[rowIndex][cellIndex] = true;
       // 근처칸이 유효한 칸인가?
       if (rowIndex < 0 || cellIndex < 0 || rowIndex >= row || cellIndex >= cell) return cellData;
 
@@ -236,7 +236,7 @@
       for (let i = -1; i < 2; i++) {
         for (let j = -1; j < 2; j++) {
           // 조회했던거는 제외
-          if (searched[rowIndex + i, cellIndex + j]) { continue }
+          // if (searched[rowIndex + i, cellIndex + j]) { continue }
           data[rowIndex][cellIndex] = transferMine(rowIndex + i, cellIndex + j, cellData);
           // 닫힌 칸으로 바뀌면
           if (data[rowIndex][cellIndex] === CODE.NORMAL) {

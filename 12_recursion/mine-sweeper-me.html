@@ -177,6 +177,15 @@
         clearInterval(intervalId);
       }
     }
+
+    // 지뢰 다 보이게하기
+    const showMines = () => {
+      board.forEach((row, rI) => {
+        row.forEach((cell, cI) => {
+          if (cell === -1) $table.rows[rI].cells[cI].textContent = 'O';
+        })
+      })
+    }
     // 칸 열기
     const open = (td) => {
       const cls = td.classList;
@@ -190,6 +199,7 @@
       // 지뢰 칸인가?
       if (value === -1) {
         cls.add('opened');
+        showMines();
         td.textContent = '펑';
         $tbody.removeEventListener('click', onLeftClick);
         $tbody.removeEventListener('contextmenu', onRightClick);
