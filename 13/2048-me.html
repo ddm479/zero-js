@@ -168,7 +168,7 @@
                 data[i][j - 1] = 0; // 2244 안
                 $table.rows[i].cells[j].textContent = data[i][j];
                 $table.rows[i].cells[j - 1].textContent = '';
-                j--;
+                // j--; // 없어도 상관없음
               }
             }
             for (let j = 2; j >= 0; j--) {
