@@ -129,8 +129,88 @@
         $table.appendChild($tr);
       }
     }
+    const move = (direction) => {
+      switch (direction) {
+        case "up":
+          break;
+        case "down":
+          break;
+        case "left":
+          break;
+        case "right":
+          // 이동 -> 병합 -> 재이동 로직은 맞다
+          // moveRight(data);   // data만 변경
+          // render(data);      // 화면 렌더링  -> 1. data 변경과 DOM 렌더 분리하기
+          // 2. 중복된 부분 함수로 고치기
+          // 3. 공통 로직 하나로 4방향 처리
+          for (let i = 0; i < 4; i++) {
+            for (let j = 2; j >= 0; j--) {
+              if (data[i][j] === 0) continue;
+              // 0이 아니면 이동
+              let current = j;
+              let next = current + 1;
+              while (next < 4 && data[i][next] === 0) {
+                data[i][next] = data[i][current]; // 데이터 한칸 이동
+                data[i][current] = 0;
+                $table.rows[i].cells[current].textContent = ''; // 화면 표시 제거
+                current = next;
+                next = current + 1;
+              }
+              $table.rows[i].cells[current].textContent = data[i][current];
+            }
+          }
+          for (let i = 0; i < 4; i++) {
+            for (let j = 3; j >= 1; j--) {
+              if (data[i][j] === 0) continue;
+              // 0이 아니면 같은지 검사
+              if (data[i][j] === data[i][j - 1]) {
+                data[i][j] = data[i][j] * 2;
+                data[i][j - 1] = 0; // 2244 안
+                $table.rows[i].cells[j].textContent = data[i][j];
+                $table.rows[i].cells[j - 1].textContent = '';
+                j--;
+              }
+            }
+            for (let j = 2; j >= 0; j--) {
+              if (data[i][j] === 0) continue;
+              // 0이 아니면 이동
+              let current = j;
+              let next = current + 1;
+              while (next < 4 && data[i][next] === 0) {
+                data[i][next] = data[i][current]; // 데이터 한칸 이동
+                data[i][current] = 0;
+                $table.rows[i].cells[current].textContent = ''; // 화면 표시 제거
+                current = next;
+                next = current + 1;
+              }
+              $table.rows[i].cells[current].textContent = data[i][current];
+            }
+          }
+          break;
+      }
+    }
+
+    // 빈 칸에 랜덤으로 2 생성 
+    const spawnRandomTile = () => {
+      const emptyCells = [];
+
+      for (let i = 0; i < data.length; i++) {
+        for (let j = 0; j < data[i].length; j++) {
+          if (data[i][j] === 0) {
+            emptyCells.push([i, j]);
+          }
+        }
+      }
+      const [x, y] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      data[x][y] = 2;
+      $table.rows[x].cells[y].textContent = 2;
+    }
 
     window.addEventListener("keydown", (e) => {
+      // 기본 스크롤 막기
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+      }
       switch (e.key) {
         case "ArrowUp":
           move("up");
@@ -145,7 +225,10 @@
           move("right");
           break;
       }
+      spawnRandomTile();
+
     });
+
     let startX = 0;
     let startY = 0;
 
@@ -155,6 +238,7 @@
     });
 
     document.addEventListener("mouseup", (e) => {
+      if (startX === null || startY === null) return; // 처음 클릭 전에는 방향 계산하지 않음
       const endX = e.clientX;
       const endY = e.clientY;
 
@@ -174,6 +258,9 @@
         if (dy > 0) move("down");
         else move("up");
       }
+      spawnRandomTile();
+      startX = null;
+      startY = null;
     });
 
 
