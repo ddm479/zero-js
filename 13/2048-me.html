@@ -129,18 +129,142 @@
         $table.appendChild($tr);
       }
     }
+
+    // DOM 렌더링
+    const render = () => {
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+          const cell = $table.rows[i].cells[j];
+          const value = data[i][j];
+
+          cell.textContent = value === 0 ? '' : value;
+        }
+      }
+    }
+
     const move = (direction) => {
       switch (direction) {
         case "up":
+          for (let i = 0; i < 4; i++) {
+            // 쫙 이동
+            for (let j = 1; j <= 3; j++) {
+              if (data[j][i] === 0) continue;
+              // 0이 아니면 이동
+              let current = j;
+              let prev = current - 1;
+              while (prev > -1 && data[prev][i] === 0) {
+                data[prev][i] = data[current][i]; // 데이터 한칸 이동
+                data[current][i] = 0;
+                current = prev;
+                prev = current - 1;
+              }
+            }
+            // 병합
+            for (let j = 0; j <= 2; j++) {
+              if (data[j][i] === 0) continue;
+              // 0이 아니면 같은지 검사
+              if (data[j][i] === data[j + 1][i]) {
+                data[j][i] = data[j][i] * 2;
+                data[j + 1][i] = 0; // 2244 안돼서 재이동 필수
+              }
+            }
+            // 쫙 이동
+            for (let j = 1; j <= 3; j++) {
+              if (data[j][i] === 0) continue;
+              // 0이 아니면 이동
+              let current = j;
+              let prev = current - 1;
+              while (prev > -1 && data[prev][i] === 0) {
+                data[prev][i] = data[current][i]; // 데이터 한칸 이동
+                data[current][i] = 0;
+                current = prev;
+                prev = current - 1;
+              }
+            }
+          }
           break;
         case "down":
+          for (let i = 0; i < 4; i++) {
+            // 쫙 이동
+            for (let j = 2; j >= 0; j--) {
+              if (data[j][i] === 0) continue;
+              // 0이 아니면 이동
+              let current = j;
+              let next = current + 1;
+              while (next < 4 && data[next][i] === 0) {
+                data[next][i] = data[current][i]; // 데이터 한칸 이동
+                data[current][i] = 0;
+                current = next;
+                next = current + 1;
+              }
+            }
+            for (let j = 3; j >= 1; j--) {
+              if (data[j][i] === 0) continue;
+              // 0이 아니면 같은지 검사
+              if (data[j][i] === data[j - 1][i]) {
+                data[j][i] = data[j][i] * 2;
+                data[j - 1][i] = 0; // 2244 안됨
+              }
+            }
+            // 쫙 이동
+            for (let j = 2; j >= 0; j--) {
+              if (data[j][i] === 0) continue;
+              // 0이 아니면 이동
+              let current = j;
+              let next = current + 1;
+              while (next < 4 && data[next][i] === 0) {
+                data[next][i] = data[current][i]; // 데이터 한칸 이동
+                data[current][i] = 0;
+                current = next;
+                next = current + 1;
+              }
+            }
+
+          }
           break;
         case "left":
+          for (let i = 0; i < 4; i++) {
+            // 쫙 이동
+            for (let j = 1; j <= 3; j++) {
+              if (data[i][j] === 0) continue;
+              // 0이 아니면 이동
+              let current = j;
+              let prev = current - 1;
+              while (prev > -1 && data[i][prev] === 0) {
+                data[i][prev] = data[i][current]; // 데이터 한칸 이동
+                data[i][current] = 0;
+                current = prev;
+                prev = current - 1;
+              }
+            }
+            // 병합
+            for (let j = 0; j <= 2; j++) {
+              if (data[i][j] === 0) continue;
+              // 0이 아니면 같은지 검사
+              if (data[i][j] === data[i][j + 1]) {
+                data[i][j] = data[i][j] * 2;
+                data[i][j + 1] = 0; // 2244 안돼서 재이동 필수
+              }
+            }
+            // 쫙 이동
+            for (let j = 1; j <= 3; j++) {
+              if (data[i][j] === 0) continue;
+              // 0이 아니면 이동
+              let current = j;
+              let prev = current - 1;
+              while (prev > -1 && data[i][prev] === 0) {
+                data[i][prev] = data[i][current]; // 데이터 한칸 이동
+                data[i][current] = 0;
+                current = prev;
+                prev = current - 1;
+              }
+            }
+          }
+
           break;
         case "right":
           // 이동 -> 병합 -> 재이동 로직은 맞다
-          // moveRight(data);   // data만 변경
-          // render(data);      // 화면 렌더링  -> 1. data 변경과 DOM 렌더 분리하기
+          // 1. data 변경과 DOM 렌더 분리하기완료
           // 2. 중복된 부분 함수로 고치기
           // 3. 공통 로직 하나로 4방향 처리
           for (let i = 0; i < 4; i++) {
@@ -152,22 +276,20 @@
               while (next < 4 && data[i][next] === 0) {
                 data[i][next] = data[i][current]; // 데이터 한칸 이동
                 data[i][current] = 0;
-                $table.rows[i].cells[current].textContent = ''; // 화면 표시 제거
+                // $table.rows[i].cells[current].textContent = ''; // 화면 표시 제거
                 current = next;
                 next = current + 1;
               }
-              $table.rows[i].cells[current].textContent = data[i][current];
+              // $table.rows[i].cells[current].textContent = data[i][current];
             }
-          }
-          for (let i = 0; i < 4; i++) {
             for (let j = 3; j >= 1; j--) {
               if (data[i][j] === 0) continue;
               // 0이 아니면 같은지 검사
               if (data[i][j] === data[i][j - 1]) {
                 data[i][j] = data[i][j] * 2;
-                data[i][j - 1] = 0; // 2244 안
-                $table.rows[i].cells[j].textContent = data[i][j];
-                $table.rows[i].cells[j - 1].textContent = '';
+                data[i][j - 1] = 0; // 2244 안됨
+                // $table.rows[i].cells[j].textContent = data[i][j];
+                // $table.rows[i].cells[j - 1].textContent = '';
                 // j--; // 없어도 상관없음
               }
             }
@@ -179,15 +301,14 @@
               while (next < 4 && data[i][next] === 0) {
                 data[i][next] = data[i][current]; // 데이터 한칸 이동
                 data[i][current] = 0;
-                $table.rows[i].cells[current].textContent = ''; // 화면 표시 제거
                 current = next;
                 next = current + 1;
               }
-              $table.rows[i].cells[current].textContent = data[i][current];
             }
           }
           break;
       }
+      render();
     }
 
     // 빈 칸에 랜덤으로 2 생성 
