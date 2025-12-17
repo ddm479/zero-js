@@ -1,0 +1,297 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>2048</title>
+  <style>
+    #table {
+      border-collapse: collapse;
+      user-select: none;
+    }
+
+    #table td {
+      border: 10px solid #bbada0;
+      width: 116px;
+      height: 128px;
+      font-size: 50px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    #score {
+      user-select: none;
+    }
+
+    .color-2 {
+      background-color: #eee4da;
+      color: #776e65;
+    }
+
+    .color-4 {
+      background-color: #eee1c9;
+      color: #776e65;
+    }
+
+    .color-8 {
+      background-color: #f3b27a;
+      color: 'white';
+    }
+
+    .color-16 {
+      background-color: #f69664;
+      color: 'white';
+    }
+
+    .color-32 {
+      background-color: #f77c5f;
+      color: 'white';
+    }
+
+    .color-64 {
+      background-color: #f75f3b;
+      color: 'white';
+    }
+
+    .color-128 {
+      background-color: #edd073;
+      color: #776e65;
+    }
+
+    .color-256 {
+      background-color: #edcc62;
+      color: #776e65;
+    }
+
+    .color-512 {
+      background-color: #edc950;
+      color: #776e65;
+    }
+
+    .color-1024 {
+      background-color: #edc53f;
+      color: #776e65;
+    }
+
+    .color-2048 {
+      background-color: #edc22e;
+      color: #776e65;
+    }
+  </style>
+</head>
+
+<body>
+  <table id="table"></table>
+  <div id="score">0</div>
+  <script>
+    const $table = document.getElementById('table');
+    const $score = document.getElementById('score');
+    let data = [];
+
+    const startGame = () => {
+      const candidate = Array(16).fill().map((v, i) => {
+        return i;
+      });
+
+      const shuffle = []; // 랜덤전용 1차원 배열
+      for (let i = 0; i < 2; i++) {
+        const chosen = candidate.splice(Math.floor(Math.random() * candidate.length), 1)[0];
+        shuffle.push(chosen);
+      }
+
+      // 초기화
+      for (let i = 0; i < 4; i++) {
+        const rowData = [];
+        data.push(rowData);
+        for (let j = 0; j < 4; j++) {
+          rowData.push(0);
+        }
+      }
+
+      // 처음에 2개표시
+      for (let k = 0; k < shuffle.length; k++) {
+        const ver = Math.floor(shuffle[k] / 4);
+        const hor = shuffle[k] % 4;
+        data[ver][hor] = 2;
+      }
+
+      // 화면에 테이블 생성
+      $table.innerHTML = "";
+      for (let i = 0; i < 4; i++) {
+        const $tr = document.createElement("tr");
+
+        for (let j = 0; j < 4; j++) {
+          const $td = document.createElement("td");
+          $td.textContent = ""; // 값 표시용
+          if (data[i][j] === 2) $td.textContent = data[i][j];
+          $tr.appendChild($td);
+        }
+
+        $table.appendChild($tr);
+      }
+    }
+
+    // DOM 렌더링
+    const render = () => {
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+          const cell = $table.rows[i].cells[j];
+          const value = data[i][j];
+
+          cell.textContent = value === 0 ? '' : value;
+        }
+      }
+    }
+    function processLine(line) {
+      // 1. 압축
+      let arr = line.filter(v => v !== 0);
+
+      // 2. 병합 (한 번만)
+      for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i] === arr[i + 1]) {
+          arr[i] *= 2;
+          arr[i + 1] = 0;
+          i++; // ⭐ merge 1회 제한 핵심
+        }
+      }
+
+      // 3. 재압축
+      arr = arr.filter(v => v !== 0);
+
+      // 4. 길이 맞추기
+      while (arr.length < 4) arr.push(0);
+
+      return arr;
+    }
+
+    const move = (direction) => {
+
+      let moved = false;
+
+      if (direction === 'left') {
+        for (let i = 0; i < 4; i++) {
+          const newRow = processLine(data[i]);
+          if (!arraysEqual(data[i], newRow)) moved = true;
+          data[i] = newRow;
+        }
+      }
+
+      if (direction === 'right') {
+        for (let i = 0; i < 4; i++) {
+          const reversed = [...data[i]].reverse();
+          const newRow = processLine(reversed).reverse();
+          if (!arraysEqual(data[i], newRow)) moved = true;
+          data[i] = newRow;
+        }
+      }
+
+      if (direction === 'up') {
+        for (let i = 0; i < 4; i++) {
+          const col = [data[0][i], data[1][i], data[2][i], data[3][i]];
+          const newCol = processLine(col);
+          for (let r = 0; r < 4; r++) {
+            if (data[r][i] !== newCol[r]) moved = true;
+            data[r][i] = newCol[r];
+          }
+        }
+      }
+
+      if (direction === 'down') {
+        for (let i = 0; i < 4; i++) {
+          const col = [data[3][i], data[2][i], data[1][i], data[0][i]];
+          const newCol = processLine(col).reverse();
+          for (let r = 0; r < 4; r++) {
+            if (data[r][i] !== newCol[r]) moved = true;
+            data[r][i] = newCol[r];
+          }
+        }
+      }
+
+      if (moved) {
+        spawnRandomTile();
+      }
+
+      render();
+    }
+
+    function arraysEqual(a, b) {
+      return a.every((v, i) => v === b[i]);
+    }
+
+
+    // 빈 칸에 랜덤으로 2 생성 
+    const spawnRandomTile = () => {
+      const emptyCells = [];
+
+      for (let i = 0; i < data.length; i++) {
+        for (let j = 0; j < data[i].length; j++) {
+          if (data[i][j] === 0) {
+            emptyCells.push([i, j]);
+          }
+        }
+      }
+      const [x, y] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      data[x][y] = 2;
+      $table.rows[x].cells[y].textContent = 2;
+    }
+
+    window.addEventListener("keydown", (e) => {
+      // 기본 스크롤 막기
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+      }
+      switch (e.key) {
+        case "ArrowUp":
+          move("up");
+          break;
+        case "ArrowDown":
+          move("down");
+          break;
+        case "ArrowLeft":
+          move("left");
+          break;
+        case "ArrowRight":
+          move("right");
+          break;
+      }
+
+    });
+
+    let startX = 0;
+    let startY = 0;
+
+    document.addEventListener("mousedown", (e) => {
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    document.addEventListener("mouseup", (e) => {
+      if (startX === null || startY === null) return; // 처음 클릭 전에는 방향 계산하지 않음
+      const endX = e.clientX;
+      const endY = e.clientY;
+
+      const dx = endX - startX;
+      const dy = endY - startY;
+
+      // 드래그 거리 최소값 (미세 이동 무시)
+      const threshold = 30;
+      if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) return;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        // 좌우
+        if (dx > 0) move("right");
+        else move("left");
+      } else {
+        // 상하
+        if (dy > 0) move("down");
+        else move("up");
+      }
+      startX = null;
+      startY = null;
+    });
+
+
+    startGame();  
+  </script>
+</body>
+
+</html>
