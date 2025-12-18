@@ -86,6 +86,8 @@
     const $table = document.getElementById('table');
     const $score = document.getElementById('score');
     let data = [];
+    let isWin = false;
+    const TARGET_VALUE = 512;
 
     const startGame = () => {
       const candidate = Array(16).fill().map((v, i) => {
@@ -144,6 +146,7 @@
 
     const move = (direction) => {
       const oldData = data.map(row => [...row]);
+      let changed = false;
       switch (direction) {
         case "up":
           for (let i = 0; i < 4; i++) {
@@ -167,6 +170,7 @@
               if (data[j][i] === data[j + 1][i]) {
                 data[j][i] = data[j][i] * 2;
                 data[j + 1][i] = 0; // 2244 안돼서 재이동 필수
+                if (data[j][i] === TARGET_VALUE) isWin = true;
               }
             }
             // 쫙 이동
@@ -205,6 +209,7 @@
               if (data[j][i] === data[j - 1][i]) {
                 data[j][i] = data[j][i] * 2;
                 data[j - 1][i] = 0; // 2244 안됨
+                if (data[j][i] === TARGET_VALUE) isWin = true;
               }
             }
             // 쫙 이동
@@ -245,6 +250,7 @@
               if (data[i][j] === data[i][j + 1]) {
                 data[i][j] = data[i][j] * 2;
                 data[i][j + 1] = 0; // 2244 안돼서 재이동 필수
+                if (data[i][j] === TARGET_VALUE) isWin = true;
               }
             }
             // 쫙 이동
@@ -266,7 +272,7 @@
           // 이동 -> 병합 -> 재이동 로직은 맞다
           // 1. data 변경과 DOM 렌더 분리하기 -> 완료
           // 2. 중복된 부분 함수로 고치기
-          // 3. 공통 로직 하나로 4방향 처리
+          // 3. 공통 로직 하나로 4방향 처리   -> chatGpt버젼으로 함
           for (let i = 0; i < 4; i++) {
             for (let j = 2; j >= 0; j--) {
               if (data[i][j] === 0) continue;
@@ -288,6 +294,7 @@
               if (data[i][j] === data[i][j - 1]) {
                 data[i][j] = data[i][j] * 2;
                 data[i][j - 1] = 0; // 2244 안됨
+                if (data[i][j] === TARGET_VALUE) isWin = true;
                 // $table.rows[i].cells[j].textContent = data[i][j];
                 // $table.rows[i].cells[j - 1].textContent = '';
                 // j--; // 없어도 상관없음
@@ -308,16 +315,48 @@
           }
           break;
       }
-      if (!boardsEqual(oldData, data)) {
-        // moved = true;
-        spawnRandomTile();
+
+      // 이벤트 발생하고 배열 변화있었는가?
+      if (!isArrayEqual(oldData, data)) {
+        changed = true;
+      }
+      // 이동하거나 합병되었는가?
+      if (changed) {
         render();
+
+        // 2048이 되었는가?
+        if (isWin) {
+          alert('승리하엿습니다')
+          return
+        }
+        spawnRandomTile();
+
+        // 끝나는 조건
+        // 1. 꽉 차면서(16칸, 더이상 이동할 수 없으면서) <- 이게 먼저
+        // 2. 더 이상 합병할 수 없을 때(인접한 곳(상하좌우)에 같은 수가 없을 때)
+
+        // 게임을 더 이어갈 수 있는가?
+        if (hasEmptyCell() || canMergeAdjacentCells()) {
+          return
+        }
+        alert('실패');
+        // 게임 승패 시 게임종료 구현하기
       }
     }
 
-    // 이벤트 발생하고 배열 변화있었는지 여부 구현하기
-    const boardsEqual = () => {
+    // 이벤트 발생하고 배열 변화있었는지 판별함
+    const isArrayEqual = (a, b) => {
+      const flatA = a.flat();
+      const flatB = b.flat();
 
+      if (flatA.length !== flatB.length) return false;
+
+      return flatA.every((value, index) => value === flatB[index]);
+    };
+
+    // 빈 공간이 있는가? -> 다음에 이동할 수 있는가?
+    const hasEmptyCell = () => {
+      return data.flat().some((cell) => cell === 0)
     }
 
     // 빈 칸에 랜덤으로 2 생성 
@@ -336,11 +375,23 @@
       $table.rows[x].cells[y].textContent = 2;
     }
 
+    // 상하좌우로 인접한 셀에 같은수가 있는지 확인해서
+    // 다음에 병합할 수 있는지 판별함 
+    const canMergeAdjacentCells = () => {
+      for (let i = 0; i < data.length; i++) {
+        for (let j = 0; j < data[i].length - 1; j++) {
+          if (data[i][j] === data[i][j + 1] || data[j][i] === data[j + 1][i]) return true;
+        }
+      }
+      return false;
+    }
+
     window.addEventListener("keydown", (e) => {
       // 기본 스크롤 막기
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         e.preventDefault();
       }
+      // 방향 판단하기
       switch (e.key) {
         case "ArrowUp":
           move("up");
@@ -378,6 +429,7 @@
       const threshold = 30;
       if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) return;
 
+      // 방향 판단하기
       if (Math.abs(dx) > Math.abs(dy)) {
         // 좌우
         if (dx > 0) move("right");
