@@ -322,14 +322,14 @@
       }
       // 이동하거나 합병되었는가?
       if (changed) {
+        spawnRandomTile();
         render();
-
         // 2048이 되었는가?
         if (isWin) {
           alert('승리하엿습니다')
           return
         }
-        spawnRandomTile();
+
 
         // 끝나는 조건
         // 1. 꽉 차면서(16칸, 더이상 이동할 수 없으면서) <- 이게 먼저
@@ -372,7 +372,7 @@
       }
       const [x, y] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
       data[x][y] = 2;
-      $table.rows[x].cells[y].textContent = 2;
+      // $table.rows[x].cells[y].textContent = 2; // render()에서 한번에 렌더링
     }
 
     // 상하좌우로 인접한 셀에 같은수가 있는지 확인해서
