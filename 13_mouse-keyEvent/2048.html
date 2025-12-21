@@ -86,6 +86,7 @@
     const $table = document.getElementById('table');
     const $score = document.getElementById('score');
     let data = [];
+    // 한계: 패배조건이 빈약함, 2048-self.html에서 보완함
 
     // 실제 화면에 존재하는 태그에 반복적으로 태그를 추가하는 방법은 추가할때마다 화면을 그려야해서 성능이 안 좋다.
 
@@ -154,6 +155,7 @@
     // draw();
     function moveCells(direction) {
       switch (direction) {
+        // 보통 case문 사용할때 {} 사용하지 않는데 블록 스코프 변수를 반복해서 사용하면 겹치기 때문에 {} 사용함 
         case 'left': {
           const newData = [[], [], [], []];
           data.forEach((rowData, i) => {
@@ -161,10 +163,11 @@
               if (cellData) { // newData = [2, 2, 4]
                 const currentRow = newData[i]
                 const prevData = currentRow[currentRow.length - 1];
+                // 합쳐지는게 있는가?
                 if (prevData === cellData) { // 이전 값과 지금 값이 같으면
                   const score = parseInt($score.textContent);
                   $score.textContent = score + currentRow[currentRow.length - 1] * 2;
-                  currentRow[currentRow.length - 1] *= -2;
+                  currentRow[currentRow.length - 1] *= -2; // -는 2 2 4 8 경우에서 한번에 16으로 만드는거 방지하기 위한 꼼수
                 } else {
                   newData[i].push(cellData);
                 }
@@ -204,6 +207,10 @@
           });
           break;
         }
+        // 2 2 2 4 newData[0]  -4 4 8   -> data: 4 4 2 8
+        // 2 0 4 4 newData[1]  -4                4 0 4 8
+        // 4 0 2 4 newDate[2]  2 4 -4            8 0 4 0 
+        // 8 2 2 4 newDate[3]  -8 -8             0 0 0 0
         case 'up': {
           const newData = [[], [], [], []];
           data.forEach((rowData, i) => {
@@ -288,6 +295,7 @@
       const endCoord = [event.clientX, event.clientY];
       const diffX = endCoord[0] - startCoord[0];
       const diffY = endCoord[1] - startCoord[1];
+      // 45도선을 기준으로 상하좌우 판단함
       if (diffX < 0 && Math.abs(diffX) > Math.abs(diffY)) {
         moveCells('left');
       } else if (diffX > 0 && Math.abs(diffX) > Math.abs(diffY)) {
