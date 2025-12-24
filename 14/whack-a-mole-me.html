@@ -154,19 +154,25 @@
 
     let score = 0;
     let life = 3;
-    const duration = 5 * 1000;
+    const duration = 10 * 1000;
 
     function handleGopherClick(event) {
       event.target.classList.add('dead');
       event.target.classList.add('hidden');
       score++;
       $score.textContent = score;
+      setTimeout(() => {
+        event.target.classList.remove('dead');
+      }, 1000)
     }
     function handleBombClick(event) {
       event.target.classList.add('boom');
       event.target.classList.add('hidden');
       life--;
       $life.textContent = life;
+      setTimeout(() => {
+        event.target.classList.remove('boom');
+      }, 1000)
     }
 
     function startGame() {
@@ -177,62 +183,77 @@
       //   clearInterval(intervalRandom);
       //   alert("끝");
       // }, 5 * 1000)
+
+
+      spawnRandomItem();
+      // 처음 생성한 거 안사라지는 현상 해결할 것
+      // 시간 지나고 0초로 바꿀 것
+
       // 타이머 작동
       const intervalTimer = setInterval(() => {
         const elapsed = Date.now() - startTime; // 경과 시간
         const remaining = Math.max(0, duration - elapsed); // 남은 시간
         const time = (remaining / 1000).toFixed(1);
         $timer.textContent = time;
+        // console.log(time);
         //Number(time) === 0 || 
         if (Number(time) === 0 || life === 0) {
           clearInterval(intervalTimer); // 다음 반복되는 setInterval 종료
           clearInterval(intervalRandom);
-          alert('끝')
+          setTimeout(() => {
+            return alert(`끝 점수는${score}`);
+          }, 100)
         };
       }, 100);
 
       const intervalRandom = setInterval(() => {
-        if (life === 0) {
-          clearInterval(intervalTimer); // 다음 반복되는 setInterval 종료
-          clearInterval(intervalRandom);
-          return;
-        };
-        // 매초 9개의 구멍에서 뭐가 나올지 판단 부터 구현하기
-        const candidate = Array(9).fill().map((v, i) => {
-          return i;
-        });
+        // 없애도 되는지
+        // if (life === 0) {
+        //   clearInterval(intervalTimer); // 다음 반복되는 setInterval 종료
+        //   clearInterval(intervalRandom);
+        //   return;
+        // };
+        spawnRandomItem();
 
-        const randomInt = Math.floor(Math.random() * 9) + 1; // 1 ~ 9 
+      }, 1000);
 
-        const shuffle = []; // 랜덤전용 1차원 배열
-        for (let i = 0; i < randomInt; i++) {
-          const chosen = candidate.splice(Math.floor(Math.random() * candidate.length), 1)[0];
-          shuffle.push(chosen);
-        }
-        $$cells.forEach(($cell, i) => {
-          if (shuffle.includes(i)) {
-            // 뭔가가 나오고 있지 않다면
-            if ($$gophers[i].classList.contains('hidden') && $$bombs[i].classList.contains('hidden')) {
-              // 두더지일지 폭탄일지 랜덤하게 둘중 하나 결정
-              if (Math.random() < 0.5) {
-                $$gophers[i].classList.remove('hidden');
-                setTimeout(() => {
-                  // 등장 1초 후 화면에서 숨기기
-                  $$gophers[i].classList.add('hidden');
-                }, 1000)
-              } else {
-                $$bombs[i].classList.remove('hidden');
-                setTimeout(() => {
-                  $$bombs[i].classList.add('hidden');
-                }, 1000)
-              }
+    }
+    function spawnRandomItem() {
+      // 매초 9개의 구멍에서 뭐가 나올지 판단 부터 구현하기
+      const candidate = Array(9).fill().map((v, i) => {
+        return i;
+      });
+
+      const randomInt = Math.floor(Math.random() * 9) + 1; // 1 ~ 9 
+
+      const shuffle = []; // 랜덤전용 1차원 배열
+      for (let i = 0; i < randomInt; i++) {
+        const chosen = candidate.splice(Math.floor(Math.random() * candidate.length), 1)[0];
+        shuffle.push(chosen);
+      }
+      $$cells.forEach(($cell, i) => {
+        if (shuffle.includes(i)) {
+          // 뭔가가 나오고 있지 않다면
+          if ($$gophers[i].classList.contains('hidden') && $$bombs[i].classList.contains('hidden')) {
+            // 두더지일지 폭탄일지 랜덤하게 둘중 하나 결정
+            console.log(i)
+            if (Math.random() < 0.5) {
+              $$gophers[i].classList.remove('hidden');
+              setTimeout(() => {
+                // 등장 1초 후 화면에서 숨기기
+                $$gophers[i].classList.add('hidden');
+              }, 1000)
+            } else {
+              $$bombs[i].classList.remove('hidden');
+              setTimeout(() => {
+                $$bombs[i].classList.add('hidden');
+              }, 1000)
             }
           }
-        })
-      }, 1000)
+        }
+      })
+
     }
-
-
 
     // 두더지와 폭탄 이미지에 이벤트 리스너연결
     $$cells.forEach(($cell) => {
