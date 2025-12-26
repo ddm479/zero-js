@@ -145,6 +145,7 @@
     const $$cells = document.querySelectorAll('.cell');
     const $$gophers = [];
     const $$bombs = [];
+    let active = Array(9).fill(false);
     let started = false;
 
     $$cells.forEach(($cell) => {
@@ -154,7 +155,7 @@
 
     let score = 0;
     let life = 3;
-    const duration = 10 * 1000;
+    const duration = 30 * 1000;
 
     function handleGopherClick(event) {
       event.target.classList.add('dead');
@@ -175,6 +176,10 @@
       }, 1000)
     }
 
+    // 못한것
+    // 1. 처음 생성한 거 안사라지는 현상 해결할 것
+    // 2. 시간 지나고 0초로 바꿀 것
+    // 3. 처음에 나온 곳에서 또 나오는 현상 
     function startGame() {
       const startTime = Date.now();
       started = true;
@@ -184,10 +189,7 @@
       //   alert("끝");
       // }, 5 * 1000)
 
-
       spawnRandomItem();
-      // 처음 생성한 거 안사라지는 현상 해결할 것
-      // 시간 지나고 0초로 바꿀 것
 
       // 타이머 작동
       const intervalTimer = setInterval(() => {
@@ -207,17 +209,12 @@
       }, 100);
 
       const intervalRandom = setInterval(() => {
-        // 없애도 되는지
-        // if (life === 0) {
-        //   clearInterval(intervalTimer); // 다음 반복되는 setInterval 종료
-        //   clearInterval(intervalRandom);
-        //   return;
-        // };
         spawnRandomItem();
-
       }, 1000);
 
     }
+    // 올라오고 1초뒤에 내려갓다가바로 올라가서 계속 올라가는것처럼 보인다 -> 처음 spawnRandomItem() 생성한거 안사라지는 현상
+    // 올라오고 1초뒤에 setinterval먼저해서 hidden이 없으므로 내려감 이렇게 둘중하나 -> 첫 spawnRandomItem() 다 끝나고부터 이렇게 지속됨
     function spawnRandomItem() {
       // 매초 9개의 구멍에서 뭐가 나올지 판단 부터 구현하기
       const candidate = Array(9).fill().map((v, i) => {
@@ -231,8 +228,9 @@
         const chosen = candidate.splice(Math.floor(Math.random() * candidate.length), 1)[0];
         shuffle.push(chosen);
       }
-      $$cells.forEach(($cell, i) => {
-        if (shuffle.includes(i)) {
+      shuffle.forEach((i) => {
+        if (!active[i]) {
+          active[i] = true;
           // 뭔가가 나오고 있지 않다면
           if ($$gophers[i].classList.contains('hidden') && $$bombs[i].classList.contains('hidden')) {
             // 두더지일지 폭탄일지 랜덤하게 둘중 하나 결정
@@ -242,11 +240,13 @@
               setTimeout(() => {
                 // 등장 1초 후 화면에서 숨기기
                 $$gophers[i].classList.add('hidden');
+                active[i] = false;
               }, 1000)
             } else {
               $$bombs[i].classList.remove('hidden');
               setTimeout(() => {
                 $$bombs[i].classList.add('hidden');
+                active[i] = false;
               }, 1000)
             }
           }
