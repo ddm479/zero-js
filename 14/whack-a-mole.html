@@ -162,14 +162,33 @@
           }, 50);
         }
       }, 100);
+      // tick();
       const tickId = setInterval(tick, 1000);
       tick();
     });
+    // r은 remove('hidden'), a는 add('hidden')
+    // hole은 걍 holes의 요소 한 개로 생각해서 타이머 id가 있으면 9, 없으면 0으로 가정함
 
-    // 화면: hidden
+    // 1. tick()을 const tickId = setInterval(tick, 1000); 앞에 호출하는 경우
+    //       0 1 2 3 4 5
+    // hole: 9 9 0 9 0
+    // 화면: r r a r a
+    // 호출스택: 
+    // 백그라운드 :  interval(tick, 1000)
+    // 태스크큐: 
+    // 1초 set interval 2초 interval set 3초 interval 4초 ...
+    // 1-1. tick()을 먼저 호출하면 0초, 1초에서 remove가 지속된 상태로 끝나는 것을 볼 수 있다. → 처음 생성한 거 1초뒤에 안 사라지는 오류 발생 원인
+    // 1-2. 1초에서 set먼저 실행되면 올라와있던 아이템이 사라지고 그 후 바로 interval 실행되면 그 곳에서 다른 아이템이 올라와서 겹쳐질 수 있다 → 처음에 나온 곳에서 1초뒤에 또 나오는 오류 발생 원인
+
+
+    // 2. tick()을 const tickId = setInterval(tick, 1000); 뒤에 호출하는 경우
+    //       0 1 2 3 4 5
+    // hole: 9 0 9 0 9 0
+    // 화면: r a r a r a
     // 호출스택:
-    // 백그라운드 : interval(tick, 1000)
-    // 태스크큐:
+    // 백그라운드 : delay가 같아도 먼저 등록되어서 interval(tick, 1000)이 항상먼저! 실행 , set
+    // 태스크큐: 
+    // 1초 interval set 2초 interval 3초  interval부터 실행! set 4초
     let gopherPercent = 0.3;
     let bombPercent = 0.5;
     function tick() {

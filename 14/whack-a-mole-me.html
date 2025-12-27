@@ -177,19 +177,14 @@
     }
 
     // 못한것
-    // 1. 처음 생성한 거 안사라지는 현상 해결할 것
+    // 1. 처음 생성한 거 1초뒤에 안 사라지는 오류 발생 -> spawnRandomItem();을 setInterval()보다 늦게 호출로 해결완료
     // 2. 시간 지나고 0초로 바꿀 것
-    // 3. 처음에 나온 곳에서 또 나오는 현상 
+    // 3. 처음에 나온 곳에서 1초뒤에 또 나오는 오류 발생 -> spawnRandomItem();을 setInterval()보다 늦게 호출로 해결완료
+    // -> whack-a-mole.html에서 설명함
+
     function startGame() {
       const startTime = Date.now();
       started = true;
-      // setTimeout(() => {
-      //   clearInterval(intervalTimer);
-      //   clearInterval(intervalRandom);
-      //   alert("끝");
-      // }, 5 * 1000)
-
-      spawnRandomItem();
 
       // 타이머 작동
       const intervalTimer = setInterval(() => {
@@ -198,7 +193,6 @@
         const time = (remaining / 1000).toFixed(1);
         $timer.textContent = time;
         // console.log(time);
-        //Number(time) === 0 || 
         if (Number(time) === 0 || life === 0) {
           clearInterval(intervalTimer); // 다음 반복되는 setInterval 종료
           clearInterval(intervalRandom);
@@ -208,9 +202,12 @@
         };
       }, 100);
 
+      // spawnRandomItem();
       const intervalRandom = setInterval(() => {
         spawnRandomItem();
       }, 1000);
+
+      spawnRandomItem();
 
     }
     // 올라오고 1초뒤에 내려갓다가바로 올라가서 계속 올라가는것처럼 보인다 -> 처음 spawnRandomItem() 생성한거 안사라지는 현상
@@ -233,8 +230,8 @@
           active[i] = true;
           // 뭔가가 나오고 있지 않다면
           if ($$gophers[i].classList.contains('hidden') && $$bombs[i].classList.contains('hidden')) {
+            console.log(i);
             // 두더지일지 폭탄일지 랜덤하게 둘중 하나 결정
-            console.log(i)
             if (Math.random() < 0.5) {
               $$gophers[i].classList.remove('hidden');
               setTimeout(() => {
