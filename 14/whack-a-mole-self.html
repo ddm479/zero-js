@@ -220,6 +220,7 @@
           holes[index] = 0;
           event.target.classList.remove('boom');
         }, 1000);
+        ////////// 생명 추가 /////////////////////////////
         life--;
         $life.textContent = life;
         if (life === 0) {
@@ -229,6 +230,7 @@
             alert(`게임 오버! 점수는${score}점`);
           }, 50);
         }
+        /////////////////////////////////////////////////
       });
     });
   </script>

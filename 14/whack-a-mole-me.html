@@ -145,7 +145,6 @@
     const $$cells = document.querySelectorAll('.cell');
     const $$gophers = [];
     const $$bombs = [];
-    let active = Array(9).fill(false);
     let started = false;
 
     $$cells.forEach(($cell) => {
@@ -226,28 +225,27 @@
         shuffle.push(chosen);
       }
       shuffle.forEach((i) => {
-        if (!active[i]) {
-          active[i] = true;
-          // 뭔가가 나오고 있지 않다면
-          if ($$gophers[i].classList.contains('hidden') && $$bombs[i].classList.contains('hidden')) {
-            console.log(i);
-            // 두더지일지 폭탄일지 랜덤하게 둘중 하나 결정
-            if (Math.random() < 0.5) {
-              $$gophers[i].classList.remove('hidden');
-              setTimeout(() => {
-                // 등장 1초 후 화면에서 숨기기
-                $$gophers[i].classList.add('hidden');
-                active[i] = false;
-              }, 1000)
-            } else {
-              $$bombs[i].classList.remove('hidden');
-              setTimeout(() => {
-                $$bombs[i].classList.add('hidden');
-                active[i] = false;
-              }, 1000)
-            }
-          }
+        // 이미 뭔가가 나오고 있는가?(그 칸이 비어있는가?)
+        const isEmpty = $$gophers[i].classList.contains('hidden') && $$bombs[i].classList.contains('hidden');
+        if (!isEmpty) return; // forEach 내부에서의 return은 현재 인덱스에 대한 콜백 함수만 종료하고 다음 인덱스로 넘어간다.
+
+        // 뭔가가 나오고 있지 않다면
+        console.log(i);
+        // 두더지일지 폭탄일지 랜덤하게 둘중 하나 결정
+        if (Math.random() < 0.5) {
+          $$gophers[i].classList.remove('hidden');
+          setTimeout(() => {
+            // 등장 1초 후 화면에서 숨기기
+            $$gophers[i].classList.add('hidden');
+          }, 1000)
+        } else {
+          $$bombs[i].classList.remove('hidden');
+          setTimeout(() => {
+            $$bombs[i].classList.add('hidden');
+          }, 1000)
         }
+
+
       })
 
     }
